@@ -3,879 +3,366 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ApplyRadar — Dashboard</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <title>ApplyRadar</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    /* ── Light mode (default) ── */
-    :root, [data-theme="light"] {
-      --bg: #f5f4f0;
-      --surface: #ffffff;
-      --surface-2: #f0efe9;
-      --border: #e2e0d8;
-      --border-subtle: #ebe9e2;
-      --text: #1a1814;
-      --text-2: #6b6760;
-      --text-dim: #b0ada4;
-      --accent: #1a1814;
-      --accent-warm: #b07d3a;
-      --topbar-bg: #ffffff;
-      --sidebar-bg: #faf9f6;
-      --shadow: 0 1px 4px rgba(0,0,0,0.08);
-      --saved:     #2563eb;
-      --applied:   #16a34a;
-      --interview: #d97706;
-      --offer:     #15803d;
-      --rejected:  #dc2626;
-      --naukri:     #e85d25;
-      --linkedin:   #0077b5;
-      --internshala:#0096cc;
-      --r: 10px;
-      --r-sm: 7px;
+    /* ── Light (default) ── */
+    :root,[data-theme="light"]{
+      --bg:#f5f4f0;--surface:#ffffff;--surface-2:#f0efe9;--border:#e2e0d8;--border-subtle:#ebe9e2;
+      --text:#1a1814;--text-2:#6b6760;--text-dim:#b0ada4;--accent:#1a1814;--accent-warm:#b07d3a;
+      --topbar-bg:#ffffff;--sidebar-bg:#faf9f6;--shadow:0 1px 4px rgba(0,0,0,0.08);
+      --saved:#2563eb;--applied:#16a34a;--interview:#d97706;--offer:#15803d;--rejected:#dc2626;
+      --naukri:#e85d25;--linkedin:#0077b5;--internshala:#0096cc;
+      --r:10px;--r-sm:7px;
+    }
+    /* ── Dark ── */
+    [data-theme="dark"]{
+      --bg:#0c0c10;--surface:#13131a;--surface-2:#1c1c26;--border:#26263a;--border-subtle:#1e1e2c;
+      --text:#e8d5b7;--text-2:#9490a8;--text-dim:#4a4760;--accent:#e8d5b7;--accent-warm:#d4a96a;
+      --topbar-bg:#13131a;--sidebar-bg:#13131a;--shadow:none;
+      --saved:#3b82f6;--applied:#4ade80;--interview:#f59e0b;--offer:#86efac;--rejected:#f87171;
+      --naukri:#ff6b35;--linkedin:#0077b5;--internshala:#00aeef;
     }
 
-    /* ── Dark mode ── */
-    [data-theme="dark"] {
-      --bg: #0c0c10;
-      --surface: #13131a;
-      --surface-2: #1c1c26;
-      --border: #26263a;
-      --border-subtle: #1e1e2c;
-      --text: #e8d5b7;
-      --text-2: #9490a8;
-      --text-dim: #4a4760;
-      --accent: #e8d5b7;
-      --accent-warm: #d4a96a;
-      --topbar-bg: #13131a;
-      --sidebar-bg: #13131a;
-      --shadow: none;
-      --saved:     #3b82f6;
-      --applied:   #4ade80;
-      --interview: #f59e0b;
-      --offer:     #86efac;
-      --rejected:  #f87171;
-      --naukri:     #ff6b35;
-      --linkedin:   #0077b5;
-      --internshala:#00aeef;
-      --r: 10px;
-      --r-sm: 7px;
-    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow:hidden}
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    /* ── Layout ── */
+    .layout{display:grid;grid-template-rows:56px 1fr;height:100vh}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid var(--border);background:var(--topbar-bg)}
+    .logo{display:flex;align-items:center;gap:10px}
+    .logo-mark{width:26px;height:26px;background:#1a1a2e;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .logo-name{font-size:15px;font-weight:700;letter-spacing:-0.02em}
+    .topbar-right{display:flex;align-items:center;gap:8px}
+    .topbar-stat{display:flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--border);border-radius:99px;padding:4px 12px;font-size:12px;color:var(--text-2);font-family:'DM Mono',monospace}
+    .topbar-stat strong{color:var(--text)}
 
-    html, body {
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      line-height: 1.5;
-      -webkit-font-smoothing: antialiased;
-      overflow: hidden;
-    }
+    /* ── Nav tabs ── */
+    .nav-tabs{display:flex;gap:2px;background:var(--surface-2);border-radius:var(--r-sm);padding:3px}
+    .nav-tab{background:transparent;border:none;border-radius:5px;padding:5px 14px;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;color:var(--text-2);cursor:pointer;transition:all 0.15s;white-space:nowrap}
+    .nav-tab.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+    .nav-tab:hover:not(.active){color:var(--text)}
 
-    /* noise overlay — only in dark mode */
-    [data-theme="dark"] body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-      opacity: 0.025; pointer-events: none; z-index: 0;
-    }
+    .btn{display:inline-flex;align-items:center;gap:6px;border-radius:var(--r-sm);padding:7px 14px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;border:none;transition:all 0.14s;white-space:nowrap}
+    .btn-ghost{background:transparent;color:var(--text-2);border:1px solid var(--border)}
+    .btn-ghost:hover{background:var(--surface-2);color:var(--text)}
+    .btn-accent{background:var(--accent);color:var(--bg)}
+    .btn-accent:hover{opacity:0.88}
 
-    /* ── Drag and drop ── */
-    .card[draggable="true"] { cursor: grab; }
-    .card[draggable="true"]:active { cursor: grabbing; }
-    .card.dragging { opacity: 1; }
-    .card.drag-ghost { opacity: 0.4; }
+    /* ── Body / Sidebar ── */
+    .body{display:grid;grid-template-columns:220px 1fr;overflow:hidden}
+    .sidebar{border-right:1px solid var(--border);background:var(--sidebar-bg);padding:16px 14px;display:flex;flex-direction:column;gap:20px;overflow-y:auto}
+    .sidebar-label{font-size:10px;font-family:'DM Mono',monospace;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+    .filter-btn{display:flex;align-items:center;justify-content:space-between;width:100%;background:transparent;border:none;border-radius:var(--r-sm);padding:6px 9px;color:var(--text-2);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.12s;text-align:left}
+    .filter-btn:hover,.filter-btn.active{background:var(--surface-2);color:var(--text)}
+    .filter-left{display:flex;align-items:center;gap:8px}
+    .filter-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .filter-count{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-dim);background:var(--bg);padding:1px 6px;border-radius:4px}
+    .search-box{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 11px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none}
+    .search-box:focus{border-color:var(--accent)55}
+    .search-box::placeholder{color:var(--text-dim)}
+    .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .mini-stat{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px;text-align:center}
+    .mini-stat-num{font-size:20px;font-weight:700;line-height:1;letter-spacing:-0.02em;margin-bottom:4px}
+    .mini-stat-label{font-size:10px;color:var(--text-dim);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.05em}
 
-    .col-cards.drag-over {
-      background: var(--saved)10;
-      border: 2px dashed var(--saved)66;
-      border-radius: var(--r);
-      transition: background 0.15s, border 0.15s;
-    }
-
-    .col-empty {
-      border: 1px dashed var(--border);
-      border-radius: var(--r);
-      padding: 20px;
-      text-align: center;
-      color: var(--text-dim);
-      font-size: 12px;
-      min-height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-rows: 56px 1fr;
-      height: 100vh;
-      position: relative; z-index: 1;
-    }
-
-    /* ── Topbar ── */
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 24px;
-      border-bottom: 1px solid var(--border);
-      background: var(--topbar-bg);
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .logo-mark {
-      width: 26px; height: 26px;
-      background: #1a1a2e; /* always dark — icon stroke is always light */
-      border-radius: 7px;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .logo-name {
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-
-    .topbar-right {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .topbar-stat {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 99px;
-      padding: 4px 12px;
-      font-size: 12px;
-      color: var(--text-2);
-      font-family: 'DM Mono', monospace;
-    }
-
-    .topbar-stat strong { color: var(--text); }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      border-radius: var(--r-sm);
-      padding: 7px 14px;
-      font-size: 13px;
-      font-weight: 600;
-      font-family: 'DM Sans', sans-serif;
-      cursor: pointer;
-      border: none;
-      transition: all 0.14s ease;
-      white-space: nowrap;
-    }
-
-    .btn-ghost {
-      background: transparent;
-      color: var(--text-2);
-      border: 1px solid var(--border);
-    }
-    .btn-ghost:hover { background: var(--surface-2); color: var(--text); }
-
-    .btn-accent {
-      background: var(--accent);
-      color: #0c0c10;
-    }
-    .btn-accent:hover { opacity: 0.88; }
-
-    .btn-danger {
-      background: transparent;
-      color: var(--rejected);
-      border: 1px solid var(--rejected)44;
-    }
-    .btn-danger:hover { background: var(--rejected)18; }
-
-    /* ── Body ── */
-    .body {
-      display: grid;
-      grid-template-columns: 240px 1fr;
-      overflow: hidden;
-    }
-
-    /* ── Sidebar ── */
-    .sidebar {
-      border-right: 1px solid var(--border);
-      background: var(--sidebar-bg);
-      padding: 20px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-      overflow-y: auto;
-    }
-
-    .sidebar-section-label {
-      font-size: 10px;
-      font-family: 'DM Mono', monospace;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 8px;
-    }
-
-    .filter-btn {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      background: transparent;
-      border: none;
-      border-radius: var(--r-sm);
-      padding: 7px 10px;
-      color: var(--text-2);
-      font-size: 13px;
-      font-family: 'DM Sans', sans-serif;
-      cursor: pointer;
-      transition: all 0.12s;
-      text-align: left;
-    }
-
-    .filter-btn:hover { background: var(--surface-2); color: var(--text); }
-    .filter-btn.active { background: var(--surface-2); color: var(--text); }
-
-    .filter-left {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .filter-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    .filter-count {
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      color: var(--text-dim);
-      background: var(--bg);
-      padding: 1px 6px;
-      border-radius: 4px;
-    }
-
-    .search-box {
-      width: 100%;
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: var(--r-sm);
-      padding: 8px 12px;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      outline: none;
-      transition: border-color 0.14s;
-    }
-    .search-box:focus { border-color: var(--accent)55; }
-    .search-box::placeholder { color: var(--text-dim); }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
-    .mini-stat {
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: var(--r-sm);
-      padding: 10px;
-      text-align: center;
-    }
-
-    .mini-stat-num {
-      font-size: 20px;
-      font-weight: 700;
-      line-height: 1;
-      letter-spacing: -0.02em;
-      margin-bottom: 4px;
-    }
-
-    .mini-stat-label {
-      font-size: 10px;
-      color: var(--text-dim);
-      font-family: 'DM Mono', monospace;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    /* ── Main ── */
-    .main {
-      overflow-x: auto;
-      overflow-y: hidden;
-      padding: 20px 20px 20px 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .main-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-shrink: 0;
-    }
-
-    .view-title {
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-    }
+    /* ── Page areas ── */
+    .page{display:none;flex-direction:column;overflow:hidden;padding:20px;gap:16px;flex:1}
+    .page.active{display:flex}
+    .page-scroll{flex:1;overflow-y:auto;overflow-x:hidden}
 
     /* ── Kanban ── */
-    .kanban {
-      display: flex;
-      gap: 14px;
-      overflow-x: auto;
-      overflow-y: hidden;
-      flex: 1;
-      padding-bottom: 8px;
-    }
+    .kanban{display:flex;gap:14px;overflow-x:auto;overflow-y:hidden;flex:1;padding-bottom:8px}
+    .kanban::-webkit-scrollbar{height:4px}
+    .kanban::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+    .column{flex-shrink:0;width:260px;display:flex;flex-direction:column;gap:10px}
+    .col-header{display:flex;align-items:center;justify-content:space-between;padding:0 2px}
+    .col-title{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-2)}
+    .col-dot{width:8px;height:8px;border-radius:50%}
+    .col-badge{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-dim);background:var(--surface-2);padding:1px 7px;border-radius:4px}
+    .col-cards{display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1;padding-right:2px;min-height:80px}
+    .col-cards::-webkit-scrollbar{width:3px}
+    .col-cards::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+    .col-empty{border:1px dashed var(--border);border-radius:var(--r);padding:20px;text-align:center;color:var(--text-dim);font-size:12px;min-height:60px;display:flex;align-items:center;justify-content:center}
+    .col-cards.drag-over{background:var(--saved)10;border:2px dashed var(--saved)55;border-radius:var(--r)}
 
-    .kanban::-webkit-scrollbar { height: 4px; }
-    .kanban::-webkit-scrollbar-track { background: transparent; }
-    .kanban::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    /* ── Card ── */
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;cursor:pointer;transition:all 0.14s;position:relative;animation:cardIn .2s ease both}
+    @keyframes cardIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+    .card:hover{border-color:var(--accent)33;background:var(--surface-2);transform:translateY(-1px);box-shadow:var(--shadow)}
+    .card.duplicate{border-color:var(--interview)55}
+    .card[draggable="true"]{cursor:grab}
+    .card.drag-ghost{opacity:.35}
+    .card-platform{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+    .platform-badge{font-size:10px;font-family:'DM Mono',monospace;font-weight:500;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.05em}
+    .platform-naukri{background:#e85d2518;color:var(--naukri)}
+    .platform-linkedin{background:#0077b518;color:var(--linkedin)}
+    .platform-internshala{background:#0096cc18;color:var(--internshala)}
+    .dup-badge{font-size:10px;font-family:'DM Mono',monospace;color:var(--interview);background:var(--interview)18;padding:2px 7px;border-radius:4px}
+    .card-title{font-size:13px;font-weight:700;line-height:1.3;margin-bottom:2px}
+    .card-company{font-size:12px;color:var(--text-2);margin-bottom:7px}
+    .card-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+    .tag{font-size:11px;color:var(--text-dim);background:var(--surface-2);padding:2px 7px;border-radius:4px}
+    .tag.followup{color:var(--interview);background:var(--interview)15;border:1px solid var(--interview)33}
+    .card-footer{display:flex;align-items:center;justify-content:space-between}
+    .card-date{font-size:11px;color:var(--text-dim);font-family:'DM Mono',monospace}
+    .card-actions{display:flex;gap:4px}
+    .icon-btn{width:26px;height:26px;background:transparent;border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-dim);transition:all 0.12s}
+    .icon-btn:hover{background:var(--surface-2);color:var(--text);border-color:var(--accent)44}
+    .icon-btn.delete:hover{background:var(--rejected)18;color:var(--rejected);border-color:var(--rejected)44}
 
-    .column {
-      flex-shrink: 0;
-      width: 260px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
+    /* ── Drawer ── */
+    .drawer-overlay{position:fixed;inset:0;background:#0c0c1088;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s}
+    .drawer-overlay.open{opacity:1;pointer-events:all}
+    .drawer{position:fixed;top:0;right:-460px;width:440px;height:100vh;background:var(--surface);border-left:1px solid var(--border);z-index:101;transition:right .25s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden}
+    .drawer.open{right:0}
+    .drawer-header{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-shrink:0}
+    .drawer-title{font-size:16px;font-weight:700;line-height:1.3}
+    .drawer-company{font-size:13px;color:var(--text-2);margin-top:3px}
+    .drawer-body{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:18px}
+    .drawer-label{font-size:10px;font-family:'DM Mono',monospace;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px}
+    .select-input,.text-input,.date-input,.notes-area{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none}
+    .select-input:focus,.text-input:focus,.date-input:focus,.notes-area:focus{border-color:var(--accent)55}
+    .notes-area{resize:vertical;min-height:80px}
+    .notes-area::placeholder,.text-input::placeholder{color:var(--text-dim)}
+    .detail-row{display:flex;align-items:flex-start;gap:10px;font-size:13px}
+    .detail-label{color:var(--text-dim);min-width:80px;flex-shrink:0;font-family:'DM Mono',monospace;font-size:11px;padding-top:2px}
+    .detail-value{color:var(--text);word-break:break-word}
+    .detail-link{color:var(--accent-warm);text-decoration:none;font-size:12px;word-break:break-all}
+    .detail-link:hover{text-decoration:underline}
+    .drawer-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0}
+    .btn-danger{background:transparent;color:var(--rejected);border:1px solid var(--rejected)44;border-radius:var(--r-sm);padding:7px 14px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .14s}
+    .btn-danger:hover{background:var(--rejected)18}
 
-    .col-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 2px;
-    }
+    /* ── ATS Scorer ── */
+    .ats-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;height:100%}
+    .ats-panel{display:flex;flex-direction:column;gap:12px}
+    .ats-label{font-size:12px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.07em}
+    .ats-textarea{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;outline:none;resize:none;min-height:200px;line-height:1.7}
+    .ats-textarea:focus{border-color:var(--accent)55}
+    .ats-textarea::placeholder{color:var(--text-dim)}
+    .score-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:16px}
+    .score-big{text-align:center;padding:16px 0}
+    .score-number{font-size:56px;font-weight:800;line-height:1;letter-spacing:-0.03em}
+    .score-label{font-size:12px;color:var(--text-2);margin-top:4px;font-family:'DM Mono',monospace}
+    .score-bar-wrap{height:8px;background:var(--surface-2);border-radius:4px;overflow:hidden}
+    .score-bar{height:100%;border-radius:4px;transition:width .6s ease}
+    .keyword-section{display:flex;flex-direction:column;gap:8px}
+    .keyword-group-label{font-size:10px;font-family:'DM Mono',monospace;color:var(--text-dim);text-transform:uppercase;letter-spacing:.07em}
+    .keyword-chips{display:flex;flex-wrap:wrap;gap:5px}
+    .kw-chip{font-size:11px;padding:3px 9px;border-radius:99px;font-family:'DM Mono',monospace}
+    .kw-match{background:var(--applied)18;color:var(--applied);border:1px solid var(--applied)33}
+    .kw-miss{background:var(--rejected)12;color:var(--rejected);border:1px solid var(--rejected)22}
+    .ats-hint{font-size:12px;color:var(--text-dim);line-height:1.6;background:var(--surface-2);border-radius:var(--r-sm);padding:12px 14px}
 
-    .col-title {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      color: var(--text-2);
-    }
+    /* ── Resume Storage ── */
+    .resume-grid{display:grid;grid-template-columns:280px 1fr;gap:16px;height:100%}
+    .resume-list{display:flex;flex-direction:column;gap:8px;overflow-y:auto}
+    .resume-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;cursor:pointer;transition:all .14s}
+    .resume-item:hover,.resume-item.active{border-color:var(--accent)55;background:var(--surface-2)}
+    .resume-item.active{border-color:var(--accent)}
+    .resume-item-name{font-size:13px;font-weight:700;margin-bottom:3px}
+    .resume-item-meta{font-size:11px;color:var(--text-dim);font-family:'DM Mono',monospace}
+    .resume-editor{display:flex;flex-direction:column;gap:12px;height:100%}
+    .resume-name-input{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:9px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;outline:none;width:100%}
+    .resume-name-input:focus{border-color:var(--accent)55}
+    .resume-text{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;outline:none;resize:none;line-height:1.7}
+    .resume-text:focus{border-color:var(--accent)55}
+    .resume-text::placeholder{color:var(--text-dim)}
+    .resume-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--text-dim);text-align:center;flex:1}
 
-    .col-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-    }
-
-    .col-badge {
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      color: var(--text-dim);
-      background: var(--surface-2);
-      padding: 1px 7px;
-      border-radius: 4px;
-    }
-
-    .col-cards {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      overflow-y: auto;
-      flex: 1;
-      padding-right: 2px;
-    }
-
-    .col-cards::-webkit-scrollbar { width: 3px; }
-    .col-cards::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-    /* ── Job Card ── */
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      padding: 13px 14px;
-      cursor: pointer;
-      transition: all 0.14s ease;
-      position: relative;
-      animation: cardIn 0.25s ease both;
-    }
-
-    @keyframes cardIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .card:hover {
-      border-color: var(--accent)33;
-      background: var(--surface-2);
-      transform: translateY(-1px);
-    }
-
-    .card.duplicate {
-      border-color: var(--interview)44;
-    }
-
-    .card-platform {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 8px;
-    }
-
-    .platform-badge {
-      font-size: 10px;
-      font-family: 'DM Mono', monospace;
-      font-weight: 500;
-      padding: 2px 7px;
-      border-radius: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .platform-naukri     { background: #ff6b3518; color: var(--naukri); }
-    .platform-linkedin   { background: #0077b518; color: var(--linkedin); }
-    .platform-internshala{ background: #00aeef18; color: var(--internshala); }
-
-    .dup-badge {
-      font-size: 10px;
-      font-family: 'DM Mono', monospace;
-      color: var(--interview);
-      background: #f59e0b18;
-      padding: 2px 7px;
-      border-radius: 4px;
-    }
-
-    .card-title {
-      font-size: 13px;
-      font-weight: 700;
-      line-height: 1.3;
-      margin-bottom: 3px;
-      color: var(--text);
-    }
-
-    .card-company {
-      font-size: 12px;
-      color: var(--text-2);
-      margin-bottom: 8px;
-    }
-
-    .card-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-      margin-bottom: 10px;
-    }
-
-    .meta-tag {
-      font-size: 11px;
-      color: var(--text-dim);
-      background: var(--surface-2);
-      padding: 2px 7px;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .card-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .card-date {
-      font-size: 11px;
-      color: var(--text-dim);
-      font-family: 'DM Mono', monospace;
-    }
-
-    .card-actions {
-      display: flex;
-      gap: 4px;
-    }
-
-    .icon-btn {
-      width: 26px; height: 26px;
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      color: var(--text-dim);
-      transition: all 0.12s;
-    }
-    .icon-btn:hover { background: var(--surface-2); color: var(--text); border-color: var(--accent)44; }
-    .icon-btn.delete:hover { background: var(--rejected)18; color: var(--rejected); border-color: var(--rejected)44; }
-
-    /* col-empty defined above with drag styles */
-
-    /* ── Detail drawer ── */
-    .drawer-overlay {
-      position: fixed; inset: 0;
-      background: #0c0c1088;
-      z-index: 100;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s;
-    }
-    .drawer-overlay.open { opacity: 1; pointer-events: all; }
-
-    .drawer {
-      position: fixed;
-      top: 0; right: -440px;
-      width: 420px; height: 100vh;
-      background: var(--surface);
-      border-left: 1px solid var(--border);
-      z-index: 101;
-      transition: right 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    .drawer.open { right: 0; }
-
-    .drawer-header {
-      padding: 18px 20px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 12px;
-      flex-shrink: 0;
-    }
-
-    .drawer-title { font-size: 16px; font-weight: 700; line-height: 1.3; }
-    .drawer-company { font-size: 13px; color: var(--text-2); margin-top: 3px; }
-
-    .drawer-body {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .drawer-section-label {
-      font-size: 10px;
-      font-family: 'DM Mono', monospace;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 8px;
-    }
-
-    .status-select {
-      width: 100%;
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: var(--r-sm);
-      padding: 9px 12px;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      outline: none;
-      cursor: pointer;
-    }
-    .status-select:focus { border-color: var(--accent)55; }
-
-    .notes-area {
-      width: 100%;
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: var(--r-sm);
-      padding: 10px 12px;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      outline: none;
-      resize: vertical;
-      min-height: 90px;
-    }
-    .notes-area:focus { border-color: var(--accent)55; }
-    .notes-area::placeholder { color: var(--text-dim); }
-
-    .detail-row {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      font-size: 13px;
-    }
-
-    .detail-label {
-      color: var(--text-dim);
-      min-width: 80px;
-      flex-shrink: 0;
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      padding-top: 2px;
-    }
-
-    .detail-value { color: var(--text); word-break: break-word; }
-
-    .detail-link {
-      color: var(--accent-warm);
-      text-decoration: none;
-      font-size: 12px;
-      word-break: break-all;
-    }
-    .detail-link:hover { text-decoration: underline; }
-
-    .drawer-footer {
-      padding: 14px 20px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-
-    /* ── Toast ── */
-    .toast {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%) translateY(80px);
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      padding: 10px 18px;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text);
-      z-index: 200;
-      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      pointer-events: none;
-    }
-    .toast.show { transform: translateX(-50%) translateY(0); }
+    /* ── Templates ── */
+    .templates-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;overflow-y:auto;padding:2px}
+    .template-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:12px;transition:all .15s}
+    .template-card:hover{border-color:var(--accent)44;box-shadow:var(--shadow);transform:translateY(-1px)}
+    .template-name{font-size:14px;font-weight:700}
+    .template-desc{font-size:12px;color:var(--text-2);line-height:1.6}
+    .template-tags{display:flex;flex-wrap:wrap;gap:5px}
+    .template-tag{font-size:10px;padding:2px 8px;border-radius:4px;font-family:'DM Mono',monospace;background:var(--surface-2);color:var(--text-dim)}
+    .template-tag.highlight{background:var(--saved)15;color:var(--saved)}
+    .template-footer{display:flex;gap:8px;margin-top:auto}
+    .template-btn{flex:1;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;color:var(--text-2);transition:all .14s;text-align:center;text-decoration:none;display:block}
+    .template-btn:hover,.template-btn.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
 
     /* ── Empty state ── */
-    .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      text-align: center;
-      gap: 12px;
-      color: var(--text-dim);
-    }
+    .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;text-align:center;gap:12px;color:var(--text-dim)}
+    .empty-state h2{font-size:18px;font-weight:700;color:var(--text)}
+    .empty-state p{font-size:13px;max-width:320px;line-height:1.7}
+    .platform-chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:4px}
+    .platform-chip{font-size:11px;padding:4px 10px;border-radius:99px;border:1px solid;font-family:'DM Mono',monospace}
 
-    .empty-state-icon {
-      font-size: 40px;
-      opacity: 0.5;
-    }
+    /* ── Toast ── */
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:10px 18px;font-size:13px;font-weight:500;z-index:200;transition:transform .25s cubic-bezier(.4,0,.2,1);pointer-events:none;box-shadow:var(--shadow)}
+    .toast.show{transform:translateX(-50%) translateY(0)}
 
-    .empty-state h2 {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--text);
-    }
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    .fade-in{animation:fadeIn .3s ease both}
 
-    .empty-state p {
-      font-size: 13px;
-      max-width: 320px;
-      line-height: 1.7;
-    }
-
-    .platform-chips {
-      display: flex;
-      gap: 8px;
-      margin-top: 4px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .platform-chip {
-      font-size: 11px;
-      padding: 4px 10px;
-      border-radius: 99px;
-      border: 1px solid;
-      font-family: 'DM Mono', monospace;
-    }
-
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .fade-in { animation: fadeIn 0.3s ease both; }
+    ::-webkit-scrollbar{width:5px;height:5px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
   </style>
 </head>
 <body>
-
 <div class="layout">
 
   <!-- Topbar -->
   <header class="topbar">
     <div class="logo">
       <div class="logo-mark">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#e8d5b7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-        </svg>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#e8d5b7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       </div>
       <span class="logo-name">ApplyRadar</span>
     </div>
+
+    <!-- Nav tabs -->
+    <div class="nav-tabs">
+      <button class="nav-tab active" data-page="kanban">Applications</button>
+      <button class="nav-tab" data-page="ats">ATS Scorer</button>
+      <button class="nav-tab" data-page="resumes">My Resumes</button>
+      <button class="nav-tab" data-page="templates">Templates</button>
+    </div>
+
     <div class="topbar-right">
-      <div class="topbar-stat">
-        <strong id="hdr-total">0</strong> tracked
-      </div>
-      <div class="topbar-stat" id="hdr-dup-wrap" style="display:none">
-        <strong id="hdr-dups" style="color:var(--interview)">0</strong> duplicates
-      </div>
-      <button class="btn btn-ghost" id="theme-toggle" title="Toggle light/dark mode">
-        <!-- icon set by JS -->
-      </button>
+      <div class="topbar-stat"><strong id="hdr-total">0</strong> tracked</div>
+      <div class="topbar-stat" id="hdr-dup-wrap" style="display:none"><strong id="hdr-dups" style="color:var(--interview)">0</strong> dupes</div>
+      <button class="btn btn-ghost" id="theme-toggle"></button>
       <button class="btn btn-ghost" id="export-btn">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-        Export CSV
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export
       </button>
     </div>
   </header>
 
   <div class="body">
-
-    <!-- Sidebar -->
-    <aside class="sidebar">
+    <!-- Sidebar (only shown on kanban tab) -->
+    <aside class="sidebar" id="sidebar">
       <div>
-        <div class="sidebar-section-label">Search</div>
-        <input class="search-box" id="search" placeholder="Job title or company…" />
+        <div class="sidebar-label">Search</div>
+        <input class="search-box" id="search" placeholder="Title or company…">
       </div>
-
       <div>
-        <div class="sidebar-section-label">Filter by status</div>
+        <div class="sidebar-label">Status</div>
         <div style="display:flex;flex-direction:column;gap:2px">
-          <button class="filter-btn active" data-filter="all">
-            <span class="filter-left">
-              <span class="filter-dot" style="background:var(--accent)"></span>All jobs
-            </span>
-            <span class="filter-count" id="count-all">0</span>
-          </button>
-          <button class="filter-btn" data-filter="saved">
-            <span class="filter-left">
-              <span class="filter-dot" style="background:var(--saved)"></span>Saved
-            </span>
-            <span class="filter-count" id="count-saved">0</span>
-          </button>
-          <button class="filter-btn" data-filter="applied">
-            <span class="filter-left">
-              <span class="filter-dot" style="background:var(--applied)"></span>Applied
-            </span>
-            <span class="filter-count" id="count-applied">0</span>
-          </button>
-          <button class="filter-btn" data-filter="interview">
-            <span class="filter-left">
-              <span class="filter-dot" style="background:var(--interview)"></span>Interview
-            </span>
-            <span class="filter-count" id="count-interview">0</span>
-          </button>
-          <button class="filter-btn" data-filter="offer">
-            <span class="filter-left">
-              <span class="filter-dot" style="background:var(--offer)"></span>Offer
-            </span>
-            <span class="filter-count" id="count-offer">0</span>
-          </button>
-          <button class="filter-btn" data-filter="rejected">
-            <span class="filter-left">
-              <span class="filter-dot" style="background:var(--rejected)"></span>Rejected
-            </span>
-            <span class="filter-count" id="count-rejected">0</span>
-          </button>
+          <button class="filter-btn active" data-filter="all"><span class="filter-left"><span class="filter-dot" style="background:var(--accent)"></span>All</span><span class="filter-count" id="count-all">0</span></button>
+          <button class="filter-btn" data-filter="saved"><span class="filter-left"><span class="filter-dot" style="background:var(--saved)"></span>Saved</span><span class="filter-count" id="count-saved">0</span></button>
+          <button class="filter-btn" data-filter="applied"><span class="filter-left"><span class="filter-dot" style="background:var(--applied)"></span>Applied</span><span class="filter-count" id="count-applied">0</span></button>
+          <button class="filter-btn" data-filter="interview"><span class="filter-left"><span class="filter-dot" style="background:var(--interview)"></span>Interview</span><span class="filter-count" id="count-interview">0</span></button>
+          <button class="filter-btn" data-filter="offer"><span class="filter-left"><span class="filter-dot" style="background:var(--offer)"></span>Offer</span><span class="filter-count" id="count-offer">0</span></button>
+          <button class="filter-btn" data-filter="rejected"><span class="filter-left"><span class="filter-dot" style="background:var(--rejected)"></span>Rejected</span><span class="filter-count" id="count-rejected">0</span></button>
         </div>
       </div>
-
       <div>
-        <div class="sidebar-section-label">Platform</div>
+        <div class="sidebar-label">Platform</div>
         <div style="display:flex;flex-direction:column;gap:2px">
-          <button class="filter-btn active" data-platform="all">
-            <span class="filter-left"><span class="filter-dot" style="background:var(--text-dim)"></span>All</span>
-            <span class="filter-count" id="pcount-all">0</span>
-          </button>
-          <button class="filter-btn" data-platform="naukri">
-            <span class="filter-left"><span class="filter-dot" style="background:var(--naukri)"></span>Naukri</span>
-            <span class="filter-count" id="pcount-naukri">0</span>
-          </button>
-          <button class="filter-btn" data-platform="linkedin">
-            <span class="filter-left"><span class="filter-dot" style="background:var(--linkedin)"></span>LinkedIn</span>
-            <span class="filter-count" id="pcount-linkedin">0</span>
-          </button>
-          <button class="filter-btn" data-platform="internshala">
-            <span class="filter-left"><span class="filter-dot" style="background:var(--internshala)"></span>Internshala</span>
-            <span class="filter-count" id="pcount-internshala">0</span>
-          </button>
+          <button class="filter-btn active" data-platform="all"><span class="filter-left"><span class="filter-dot" style="background:var(--text-dim)"></span>All</span><span class="filter-count" id="pcount-all">0</span></button>
+          <button class="filter-btn" data-platform="naukri"><span class="filter-left"><span class="filter-dot" style="background:var(--naukri)"></span>Naukri</span><span class="filter-count" id="pcount-naukri">0</span></button>
+          <button class="filter-btn" data-platform="linkedin"><span class="filter-left"><span class="filter-dot" style="background:var(--linkedin)"></span>LinkedIn</span><span class="filter-count" id="pcount-linkedin">0</span></button>
+          <button class="filter-btn" data-platform="internshala"><span class="filter-left"><span class="filter-dot" style="background:var(--internshala)"></span>Internshala</span><span class="filter-count" id="pcount-internshala">0</span></button>
         </div>
       </div>
-
       <div>
-        <div class="sidebar-section-label">Stats</div>
-        <div class="stats-grid" id="stats-grid">
-          <div class="mini-stat">
-            <div class="mini-stat-num" id="stat-total">0</div>
-            <div class="mini-stat-label">Total</div>
-          </div>
-          <div class="mini-stat">
-            <div class="mini-stat-num" style="color:var(--applied)" id="stat-applied">0</div>
-            <div class="mini-stat-label">Applied</div>
-          </div>
-          <div class="mini-stat">
-            <div class="mini-stat-num" style="color:var(--interview)" id="stat-interview">0</div>
-            <div class="mini-stat-label">Interviews</div>
-          </div>
-          <div class="mini-stat">
-            <div class="mini-stat-num" style="color:var(--offer)" id="stat-offer">0</div>
-            <div class="mini-stat-label">Offers</div>
-          </div>
+        <div class="sidebar-label">Stats</div>
+        <div class="stats-grid">
+          <div class="mini-stat"><div class="mini-stat-num" id="stat-total">0</div><div class="mini-stat-label">Total</div></div>
+          <div class="mini-stat"><div class="mini-stat-num" style="color:var(--applied)" id="stat-applied">0</div><div class="mini-stat-label">Applied</div></div>
+          <div class="mini-stat"><div class="mini-stat-num" style="color:var(--interview)" id="stat-interview">0</div><div class="mini-stat-label">Interviews</div></div>
+          <div class="mini-stat"><div class="mini-stat-num" style="color:var(--offer)" id="stat-offer">0</div><div class="mini-stat-label">Offers</div></div>
         </div>
       </div>
     </aside>
 
-    <!-- Main -->
-    <main class="main">
-      <div class="main-header">
-        <span class="view-title" id="view-title">All Applications</span>
+    <!-- Pages -->
+    <div style="overflow:hidden;display:flex;flex-direction:column;flex:1">
+
+      <!-- Applications / Kanban -->
+      <div class="page active" id="page-kanban">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+          <span style="font-size:15px;font-weight:700" id="view-title">All Applications</span>
+        </div>
+        <div class="kanban" id="kanban"></div>
       </div>
-      <div class="kanban" id="kanban"></div>
-    </main>
+
+      <!-- ATS Scorer -->
+      <div class="page" id="page-ats">
+        <div style="font-size:15px;font-weight:700;flex-shrink:0">ATS Resume Scorer</div>
+        <div class="ats-grid" style="flex:1;overflow:hidden">
+          <div class="ats-panel">
+            <div class="ats-label">Job Description</div>
+            <textarea class="ats-textarea" id="ats-jd" placeholder="Paste the full job description here…"></textarea>
+            <div class="ats-label" style="margin-top:4px">Your Resume Text</div>
+            <textarea class="ats-textarea" id="ats-resume" placeholder="Paste your resume text here, or select a saved resume below…"></textarea>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select class="select-input" id="ats-resume-select" style="flex:1">
+                <option value="">— Use saved resume —</option>
+              </select>
+              <button class="btn btn-accent" id="ats-score-btn">Score →</button>
+            </div>
+          </div>
+          <div class="ats-panel" id="ats-results">
+            <div class="ats-label">Results</div>
+            <div class="ats-hint">Paste a job description and your resume, then click <strong>Score</strong> to see your keyword match percentage and missing terms.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- My Resumes -->
+      <div class="page" id="page-resumes">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+          <span style="font-size:15px;font-weight:700">My Resumes</span>
+          <button class="btn btn-accent" id="new-resume-btn">+ New Resume</button>
+        </div>
+        <div class="resume-grid" style="flex:1;overflow:hidden">
+          <div>
+            <div class="sidebar-label" style="margin-bottom:10px">Saved Resumes</div>
+            <div class="resume-list" id="resume-list">
+              <div style="font-size:12px;color:var(--text-dim);text-align:center;padding:20px">No resumes yet.<br>Click <strong>+ New Resume</strong> to add one.</div>
+            </div>
+          </div>
+          <div class="resume-editor" id="resume-editor" style="display:none">
+            <input class="resume-name-input" id="resume-name" placeholder="Resume name (e.g. Product Manager — Startups)">
+            <textarea class="resume-text" id="resume-text" placeholder="Paste your full resume text here. This is used for ATS scoring — plain text works best.&#10;&#10;Include: skills, experience, education, and any relevant keywords from your field."></textarea>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-accent" id="resume-save-btn" style="flex:1">Save Resume</button>
+              <button class="btn btn-ghost" id="resume-delete-btn">Delete</button>
+            </div>
+          </div>
+          <div class="resume-empty" id="resume-empty">
+            <div style="font-size:32px">📄</div>
+            <div style="font-weight:700;color:var(--text)">Select or create a resume</div>
+            <div style="font-size:12px">Store multiple resume versions and compare them against job descriptions in the ATS Scorer.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Templates -->
+      <div class="page" id="page-templates">
+        <div style="font-size:15px;font-weight:700;flex-shrink:0">Resume Templates</div>
+        <div class="page-scroll">
+          <p style="font-size:13px;color:var(--text-2);margin-bottom:16px;line-height:1.6">ATS-friendly templates curated for Indian job seekers. These are optimised for Naukri, LinkedIn, and company career portals — single column, clean formatting, no tables or text boxes.</p>
+          <div class="templates-grid" id="templates-grid"></div>
+        </div>
+      </div>
+
+    </div>
   </div>
 </div>
 
-<!-- Detail Drawer -->
+<!-- Drawer -->
 <div class="drawer-overlay" id="drawer-overlay"></div>
 <div class="drawer" id="drawer">
   <div class="drawer-header">
-    <div>
-      <div class="drawer-title" id="d-title"></div>
-      <div class="drawer-company" id="d-company"></div>
-    </div>
-    <button class="icon-btn" id="drawer-close">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-      </svg>
-    </button>
+    <div><div class="drawer-title" id="d-title"></div><div class="drawer-company" id="d-company"></div></div>
+    <button class="icon-btn" id="drawer-close"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
   </div>
   <div class="drawer-body" id="drawer-body"></div>
   <div class="drawer-footer">
     <button class="btn btn-accent" id="d-save-btn" style="flex:1">Save changes</button>
-    <button class="btn btn-danger" id="d-delete-btn">Delete</button>
+    <button class="btn-danger" id="d-delete-btn">Delete</button>
   </div>
 </div>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
-
 <script src="dashboard.js"></script>
 </body>
 </html>

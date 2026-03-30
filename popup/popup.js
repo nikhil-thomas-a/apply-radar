@@ -158,76 +158,57 @@ function extractJobData(platform, originalUrl) {
   try {
     // ── LinkedIn ──────────────────────────────────────────────────────────
     if (platform === 'linkedin') {
+      function cl2(s) { return (s||'').replace(/\s+/g,' ').trim() }
 
-      // Title: first h1 on the page (LinkedIn always uses exactly one h1 for job title)
-      const titleEl = document.querySelector('h1')
-      const title = cl(titleEl?.textContent || '')
-
-      // Company: look for a link that points to a LinkedIn company page
-      // Scope to main content — avoid header nav links
-      // LinkedIn company links look like: /company/blackbox-1 or similar
-      // The most reliable: the first <a href containing "/company/"> that's NOT in the nav
-      let company = ''
-      const main = document.querySelector('main') || document.querySelector('[role="main"]') || document.body
-      const allLinks = Array.from(main.querySelectorAll('a[href]'))
-      const companyLink = allLinks.find(a => {
-        const href = a.getAttribute('href') || ''
-        return (href.includes('/company/') || href.includes('linkedin.com/company/')) &&
-               a.textContent.trim().length > 0 &&
-               a.textContent.trim().length < 80
-      })
-      company = cl(companyLink?.textContent || '')
-
-      // If company still empty, try the element right after h1
-      if (!company && titleEl) {
-        let el = titleEl.nextElementSibling
-        // Walk forward through siblings
-        for (let i = 0; i < 5 && el; i++) {
-          const txt = cl(el.textContent)
-          if (txt && txt.length < 60 && !txt.includes('applicant') && !txt.includes('ago')) {
-            company = txt
-            break
-          }
-          el = el.nextElementSibling
+      // Title: LinkedIn puts title in a <p> containing the #verified-medium SVG
+      let title = ''
+      const verifiedSvg = document.querySelector('#verified-medium')
+      if (verifiedSvg) {
+        const titleEl = verifiedSvg.closest('p') || verifiedSvg.closest('h1') || verifiedSvg.closest('h2')
+        if (titleEl) {
+          title = cl2(
+            Array.from(titleEl.childNodes)
+              .filter(n => n.nodeType === 3 || (n.nodeType === 1 && n.tagName === 'SPAN' && !n.querySelector('svg')))
+              .map(n => n.textContent).join(' ')
+          )
         }
-        // If still nothing, try parent's next sibling tree
-        if (!company) {
-          let parent = titleEl.parentElement
-          for (let depth = 0; depth < 3 && parent; depth++) {
-            const next = parent.nextElementSibling
-            if (next) {
-              const txt = cl(next.textContent)
-              if (txt && txt.length < 60) { company = txt.split('\n')[0]; break }
-            }
-            parent = parent.parentElement
-          }
+      }
+      // Fallback
+      if (!title) title = cl2(document.querySelector('h1')?.textContent || '').replace(/\s*\(verified job\)/i,'').trim()
+
+      // Company: first /company/ link in main content
+      const mainEl = document.querySelector('main') || document.querySelector('[role="main"]') || document.body
+      let company = ''
+      let companyEl = null
+      for (const a of Array.from(mainEl.querySelectorAll('a[href]'))) {
+        const href = a.getAttribute('href') || ''
+        const txt = cl2(a.textContent)
+        if (href.includes('/company/') && txt.length > 0 && txt.length < 80) {
+          company = txt; companyEl = a; break
         }
       }
 
-      // Location: text near the top of the job card containing city/country info
-      // Usually appears as "City, State, Country · X weeks ago · X applicants"
+      // Location
       let jobLocation = ''
-      if (titleEl) {
-        // Search the section containing the h1 for location-like text
-        const container = titleEl.closest('div') || titleEl.parentElement
-        const allText = Array.from(container?.querySelectorAll('span, div') || [])
-        for (const el of allText) {
-          const txt = cl(el.textContent)
-          // Location characteristics: has comma, has known city, or has "Remote"/"Hybrid"
-          if (
-            txt.length > 3 && txt.length < 100 &&
-            !txt.includes('applicant') && !txt.includes('Easy Apply') &&
-            !txt.includes('Save') && !txt.includes('Promoted') &&
-            (txt.includes(',') || /remote|hybrid|on.?site|bengaluru|mumbai|delhi|india|karnataka/i.test(txt))
-          ) {
-            jobLocation = txt.split('·')[0].trim()
-            break
+      if (companyEl) {
+        let ancestor = companyEl.parentElement
+        for (let d = 0; d < 6 && ancestor && !jobLocation; d++) {
+          for (const el of Array.from(ancestor.querySelectorAll('span,div'))) {
+            if (el.children.length > 3) continue
+            const txt = cl2(el.textContent)
+            if (txt.length > 3 && txt.length < 80 &&
+                !txt.match(/applicant|Easy Apply|Save|Promoted|hirer|Premium|actively|Repost|weeks|days|month/i) &&
+                (txt.includes(',') || /remote|hybrid|on.?site|bengaluru|mumbai|delhi|india|bangalore|karnataka/i.test(txt))) {
+              jobLocation = txt.split('·')[0].split('\n')[0].trim(); break
+            }
           }
+          ancestor = ancestor.parentElement
         }
       }
 
       return { title, company, location: jobLocation, platform: 'linkedin', url: pageUrl }
     }
+
 
     // ── Naukri ────────────────────────────────────────────────────────────
     if (platform === 'naukri') {
