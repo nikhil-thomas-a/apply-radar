@@ -267,12 +267,162 @@ function renderScoreResults(containerId, jdText, resumeText, jobTitle){
     </div>`
 }
 
+// ── ATS Mode toggle ─────────────────────────────────────────────────────────
+let atsMode = 'keywords'
+function initATSModes(){
+  document.querySelectorAll('.ats-mode-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.ats-mode-btn').forEach(b=>b.classList.remove('active'))
+      btn.classList.add('active')
+      atsMode=btn.dataset.mode
+      const jdSection=document.getElementById('ats-jd-section')
+      // Hide JD section for parse-only mode (resume only needed)
+      jdSection.style.display=atsMode==='parse'?'none':''
+      document.getElementById('ats-results').innerHTML=`<div class="hint-box">${
+        atsMode==='keywords'
+          ?'Paste or select a job description and resume, then click <strong>Analyse</strong>.'
+          :'Paste or select your resume, then click <strong>Analyse</strong> to simulate ATS parsing.'
+      }</div>`
+    })
+  })
+}
+
 // ── ATS Scorer ───────────────────────────────────────────────────────────────
 function scoreATS(){
   const jd=document.getElementById('ats-jd').value.trim()
   const resume=document.getElementById('ats-resume').value.trim()
-  if(!jd||!resume){toast('Paste both job description and resume text first');return}
-  renderScoreResults('ats-results',jd,resume,'')
+  if(!resume){toast('Paste your resume text first');return}
+  if(atsMode==='keywords'){
+    if(!jd){toast('Paste a job description first');return}
+    renderScoreResults('ats-results',jd,resume,'')
+  } else {
+    renderATSParseCheck('ats-results',resume)
+  }
+}
+
+// ── ATS Parse Check ──────────────────────────────────────────────────────────
+function renderATSParseCheck(containerId, resumeText){
+  const lines = resumeText.split('\n').map(l=>l.trim()).filter(Boolean)
+  const text = resumeText.toLowerCase()
+  const checks = []
+
+  // 1. Contact info
+  const hasEmail = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(resumeText)
+  const hasPhone = /(\+91|91)?[\s-]?[6-9]\d{9}|(\+\d{1,3}[\s-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/.test(resumeText)
+  const hasLinkedIn = /linkedin\.com\/in\//i.test(resumeText)
+  checks.push({
+    label:'Contact Information',
+    pass: hasEmail && hasPhone,
+    items:[
+      {ok:hasEmail, text:'Email address found'},
+      {ok:hasPhone, text:'Phone number found'},
+      {ok:hasLinkedIn, text:'LinkedIn URL found (recommended)'},
+    ]
+  })
+
+  // 2. Section headings
+  const sectionKws = { experience:/(experience|work history|employment|professional background)/i, education:/(education|academic|qualification|degree)/i, skills:/(skills|technical skills|core competencies|technologies)/i }
+  const foundSections = { experience: sectionKws.experience.test(resumeText), education: sectionKws.education.test(resumeText), skills: sectionKws.skills.test(resumeText) }
+  checks.push({
+    label:'Required Sections',
+    pass: foundSections.experience && foundSections.education && foundSections.skills,
+    items:[
+      {ok:foundSections.experience, text:'Experience section found'},
+      {ok:foundSections.education,  text:'Education section found'},
+      {ok:foundSections.skills,     text:'Skills section found'},
+    ]
+  })
+
+  // 3. Date formats
+  const dateFormats = [/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+\d{4}/i,/\d{4}\s*[-–—]\s*(present|current|now|\d{4})/i,/(19|20)\d{2}\s*[-–—]\s*(present|current|now|(19|20)\d{2})/i]
+  const hasDates = dateFormats.some(r=>r.test(resumeText))
+  const hasPresent = /(present|current)/i.test(resumeText)
+  checks.push({
+    label:'Date Formatting',
+    pass: hasDates,
+    items:[
+      {ok:hasDates, text:'Employment dates found (e.g. Jan 2022 – Present)'},
+      {ok:hasPresent, text:'Current role marked as "Present" or "Current"'},
+    ]
+  })
+
+  // 4. Action verbs
+  const actionVerbs = ['managed','led','developed','designed','built','implemented','created','improved','increased','reduced','delivered','launched','coordinated','analysed','analyzed','optimised','optimized','collaborated','spearheaded','achieved','streamlined','automated','deployed','maintained','executed']
+  const verbsFound = actionVerbs.filter(v=>new RegExp('\\b'+v,'i').test(resumeText))
+  const goodVerbs = verbsFound.length >= 5
+  checks.push({
+    label:'Action Verbs',
+    pass: goodVerbs,
+    items:[
+      {ok:goodVerbs, text:`${verbsFound.length} strong action verbs found (need 5+)`},
+      {ok:verbsFound.length>0, text:verbsFound.length>0?`e.g. ${verbsFound.slice(0,4).join(', ')}`:'No action verbs detected'},
+    ]
+  })
+
+  // 5. Quantification
+  const numbers = resumeText.match(/\d+[\s%+xX]*(million|lakh|crore|thousand|%|users|customers|team|projects|people|years|months|days|hrs|hours|times|x|X)?/g)||[]
+  const hasQuantification = numbers.length >= 3
+  checks.push({
+    label:'Quantified Achievements',
+    pass: hasQuantification,
+    items:[
+      {ok:hasQuantification, text:`${numbers.length} numbers/metrics found (aim for 5+ to show impact)`},
+      {ok:numbers.length>=5, text:numbers.length>=5?'Good quantification of achievements':'Add more numbers — e.g. "Improved performance by 40%"'},
+    ]
+  })
+
+  // 6. Length
+  const wordCount = resumeText.split(/\s+/).filter(Boolean).length
+  const goodLength = wordCount >= 300 && wordCount <= 800
+  checks.push({
+    label:'Resume Length',
+    pass: goodLength,
+    items:[
+      {ok:wordCount>=300, text:wordCount<300?`Only ${wordCount} words — too short (aim for 300–800)`:`${wordCount} words total`},
+      {ok:wordCount<=800, text:wordCount>800?`${wordCount} words — consider trimming to under 800 for ATS`:'Within recommended length'},
+    ]
+  })
+
+  // 7. Formatting red flags
+  const hasTableKeywords = /\|{2,}|\+[-+]+\+/.test(resumeText)
+  const hasSpecialChars = (resumeText.match(/[★✓✗•●■□▶]/g)||[]).length > 10
+  checks.push({
+    label:'ATS-Friendly Formatting',
+    pass: !hasTableKeywords,
+    items:[
+      {ok:!hasTableKeywords, text:hasTableKeywords?'⚠ Possible table detected — ATS may misread':'No table formatting detected'},
+      {ok:!hasSpecialChars, text:hasSpecialChars?'Too many special characters — some ATS systems strip them':'Special character usage looks fine'},
+    ]
+  })
+
+  // Calculate overall score
+  const passCount = checks.filter(c=>c.pass).length
+  const total = checks.length
+  const score = Math.round((passCount/total)*100)
+  const color = score>=80?'var(--applied)':score>=60?'var(--interview)':'var(--rejected)'
+  const verdict = score>=80?'Your resume is well-optimised for ATS parsing.':score>=60?'Good structure — address the flagged items to improve your pass rate.':'Several issues detected — fix these before applying to roles that use ATS screening.'
+
+  document.getElementById(containerId).innerHTML=`
+    <div class="score-card">
+      <div class="score-big">
+        <div class="score-number" style="color:${color}">${score}%</div>
+        <div class="score-sublabel">ATS compatibility score</div>
+      </div>
+      <div class="score-bar-wrap"><div class="score-bar" style="width:${score}%;background:${color}"></div></div>
+      <div class="hint-box">${verdict}</div>
+      ${checks.map(c=>`
+        <div style="background:var(--surface);border:1px solid ${c.pass?'var(--applied)22':'var(--rejected)22'};border-radius:var(--r-sm);padding:12px 14px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="font-size:14px">${c.pass?'✅':'❌'}</span>
+            <span style="font-size:12px;font-weight:700">${esc(c.label)}</span>
+          </div>
+          ${c.items.map(item=>`
+            <div style="display:flex;align-items:flex-start;gap:7px;font-size:11px;color:${item.ok?'var(--text-2)':'var(--rejected)'};margin-bottom:4px;font-family:'DM Mono',monospace">
+              <span style="flex-shrink:0">${item.ok?'·':'!'}</span>
+              <span>${esc(item.text)}</span>
+            </div>`).join('')}
+        </div>`).join('')}
+    </div>`
 }
 
 // ── Resume Match (saved job + saved resume) ───────────────────────────────────
@@ -307,6 +457,12 @@ function refreshDropdowns(){
   if(atsSel){
     const cur=atsSel.value
     atsSel.innerHTML=`<option value="">— Load from saved resumes —</option>`+resumes.map(r=>`<option value="${r.id}" ${r.id===cur?'selected':''}>${esc(r.name)}</option>`).join('')
+  }
+  // ATS scorer job dropdown
+  const atsJobSel=document.getElementById('ats-job-select')
+  if(atsJobSel){
+    const cur=atsJobSel.value
+    atsJobSel.innerHTML=`<option value="">— Load from saved jobs —</option>`+allJobs.map(j=>`<option value="${j.id}" ${j.id===cur?'selected':''}>${esc(j.title)} — ${esc(j.company)}</option>`).join('')
   }
   // JD match job dropdown
   const jdJobSel=document.getElementById('jdm-job-select')
@@ -404,7 +560,15 @@ document.getElementById('new-resume-btn').addEventListener('click',()=>{activeRe
 document.getElementById('resume-save-btn').addEventListener('click',saveCurrentResume)
 document.getElementById('resume-delete-btn').addEventListener('click',deleteCurrentResume)
 
+document.getElementById('ats-job-select')?.addEventListener('change',function(){
+  const job=allJobs.find(j=>j.id===this.value)
+  if(job){
+    const pseudoJd=[job.title,job.company,job.location||'',job.salary||'',job.experience||'',job.jobType||''].join(' ')
+    document.getElementById('ats-jd').value=pseudoJd
+  }
+})
+
 chrome.storage.onChanged.addListener(changes=>{if(changes.jobs){allJobs=changes.jobs.newValue||[];detectDups();applyFilters();updateSidebar()}})
 
 // Init
-initTheme();initTabs();initJdMatch();renderTemplates();renderResumeList();refreshDropdowns();loadJobs()
+initTheme();initTabs();initJdMatch();initATSModes();renderTemplates();renderResumeList();refreshDropdowns();loadJobs()

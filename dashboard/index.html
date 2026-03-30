@@ -201,6 +201,11 @@
     .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:10px 18px;font-size:13px;font-weight:500;z-index:200;transition:transform .25s cubic-bezier(.4,0,.2,1);pointer-events:none;box-shadow:var(--shadow)}
     .toast.show{transform:translateX(-50%) translateY(0)}
 
+
+    /* ATS mode toggle */
+    .ats-mode-btn { font-size:12px; padding:5px 12px; }
+    .ats-mode-btn.active { background:var(--accent); color:var(--bg); border-color:var(--accent); }
+
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
     .fade-in{animation:fadeIn .3s ease both}
     ::-webkit-scrollbar{width:5px;height:5px}
@@ -286,29 +291,42 @@
         <div class="kanban" id="kanban"></div>
       </div>
 
-      <!-- ATS Scorer: paste JD + paste resume → keyword score -->
+      <!-- ATS Scorer: two modes - keyword match + ATS parse check -->
       <div class="page" id="page-ats">
-        <div style="flex-shrink:0">
-          <div style="font-size:15px;font-weight:700;margin-bottom:4px">ATS Resume Scorer</div>
-          <div style="font-size:12px;color:var(--text-2)">Paste a job description and your resume to see how well your keywords match the role.</div>
+        <div style="flex-shrink:0;display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
+          <div>
+            <div style="font-size:15px;font-weight:700;margin-bottom:4px">ATS Resume Scorer</div>
+            <div style="font-size:12px;color:var(--text-2)">Paste a job description and your resume. Run keyword matching or a full ATS parse check.</div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            <button class="btn btn-ghost ats-mode-btn active" data-mode="keywords" id="mode-keywords">Keyword Match</button>
+            <button class="btn btn-ghost ats-mode-btn" data-mode="parse" id="mode-parse">ATS Parse Check</button>
+          </div>
         </div>
         <div class="two-panel">
           <div class="panel">
-            <div class="panel-label">Job Description</div>
-            <textarea class="panel-textarea" id="ats-jd" placeholder="Paste the full job description here…"></textarea>
-            <div class="panel-label">Your Resume Text</div>
-            <textarea class="panel-textarea" id="ats-resume" placeholder="Paste your resume as plain text…&#10;&#10;Tip: select a saved resume from My Resumes tab first."></textarea>
-            <div style="display:flex;gap:8px;flex-shrink:0">
-              <select class="select-input" id="ats-resume-select" style="flex:1">
+            <div id="ats-jd-section">
+              <div class="panel-label" style="margin-bottom:6px">Job Description <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim)">(or select saved job)</span></div>
+              <select class="select-input" id="ats-job-select" style="margin-bottom:8px">
+                <option value="">— Load from saved jobs —</option>
+              </select>
+              <textarea class="panel-textarea" id="ats-jd" placeholder="Paste the job description here…&#10;&#10;Include the full description for best results." style="flex:1;min-height:120px"></textarea>
+            </div>
+            <div>
+              <div class="panel-label" style="margin-bottom:6px;margin-top:8px">Your Resume <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim)">(or select saved resume)</span></div>
+              <select class="select-input" id="ats-resume-select" style="margin-bottom:8px">
                 <option value="">— Load from saved resumes —</option>
               </select>
-              <button class="btn btn-accent" id="ats-score-btn" style="flex-shrink:0">Score →</button>
+              <textarea class="panel-textarea" id="ats-resume" placeholder="Paste your resume as plain text…&#10;&#10;Include skills, experience bullets, education." style="flex:1;min-height:120px"></textarea>
             </div>
+            <button class="btn btn-accent" id="ats-score-btn" style="flex-shrink:0;margin-top:4px">Analyse →</button>
           </div>
           <div class="panel">
             <div class="panel-label">Results</div>
             <div class="panel-scroll" id="ats-results">
-              <div class="hint-box">Paste a job description and your resume text, then click <strong>Score</strong>.</div>
+              <div class="hint-box">Paste or select a job description and your resume, then click <strong>Analyse</strong>.<br><br>
+              <strong>Keyword Match</strong> — how many JD keywords appear in your resume.<br><br>
+              <strong>ATS Parse Check</strong> — simulates what an ATS/AI bot sees when it scans your resume: section detection, contact info, formatting issues, action verbs, and more.</div>
             </div>
           </div>
         </div>
