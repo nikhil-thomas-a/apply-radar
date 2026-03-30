@@ -2,7 +2,7 @@
 
 > Track every job application across Naukri, LinkedIn, and Internshala — all in one place.
 
-A Chrome extension that lets Indian job seekers save listings with one click and manage their entire hunt on a clean Kanban dashboard. No spreadsheets. No forgotten applications.
+A Chrome extension for Indian job seekers. Save listings with one click, track them on a Kanban board, score your resume against job descriptions, and store multiple resume versions.
 
 ![ApplyRadar Dashboard](docs/dashboard-screenshot.png)
 
@@ -10,115 +10,99 @@ A Chrome extension that lets Indian job seekers save listings with one click and
 
 ## ✨ Features
 
-- **One-click save** on Naukri, LinkedIn, and Internshala job detail pages
-- **Kanban board** — drag cards between Saved → Applied → Interview → Offer → Rejected
-- **Popup save** — save from the extension popup even if the page button isn't visible
-- **Duplicate detection** — flags the same role appearing across multiple platforms
-- **Already-saved state** — button turns green on pages you've already tracked
-- **Light & dark mode** — toggle in the dashboard, preference saved
-- **CSV export** — download all applications as a spreadsheet
-- **Notes per application** — add interview feedback, follow-up dates, anything
+| Feature | Description |
+|---|---|
+| One-click save | Button injected on Naukri, LinkedIn, and Internshala detail pages |
+| Popup save | Save from the extension icon even if the page button isn't visible |
+| Kanban board | Drag cards between Saved → Applied → Interview → Offer → Rejected |
+| Follow-up reminders | Set a date on any application — get a browser notification |
+| ATS Resume Scorer | Paste JD + resume → instant keyword match percentage |
+| Resume storage | Store multiple resume versions, auto-populate the ATS scorer |
+| Resume templates | Curated ATS-friendly templates for Indian job seekers |
+| Duplicate detection | Flags the same role saved from multiple platforms |
+| Already-saved state | Button turns green on pages you've already tracked |
+| Light & dark mode | Toggle in the dashboard, preference saved |
+| CSV export | Download all applications as a spreadsheet |
 
 ---
 
 ## 📸 Screenshots
 
-### Dashboard — Kanban view
-![Dashboard Kanban](docs/dashboard-screenshot.png)
+### Dashboard — Kanban + light mode
+![Dashboard](docs/dashboard-screenshot.png)
 
 ### Save button on Naukri
-![Naukri save button](docs/naukri-save.png)
+![Naukri](docs/naukri-save.png)
+
+### Save button on Internshala
+![Internshala](docs/internshala-save.png)
 
 ### Extension popup with quick save
 ![Popup](docs/popup-screenshot.png)
-
-### Save button on Internshala
-![Internshala save button](docs/internshala-save.png)
 
 ---
 
 ## 🚀 Installation
 
-This is an unpacked Chrome extension — no build step, no npm install.
+**No build step required.** Load directly into Chrome.
 
-### Step 1 — Download
-
-Clone or download this repo:
-
-```bash
-git clone https://github.com/nikhil-thomas-a/applyradar.git
-```
-
-### Step 2 — Load into Chrome
-
-1. Open Chrome and go to `chrome://extensions`
-2. Enable **Developer mode** (toggle in the top-right corner)
-3. Click **Load unpacked**
-4. Select the `applyradar-v2` folder — the one that has `manifest.json` directly inside it
-5. ApplyRadar will appear in your extensions list
-
-### Step 3 — Pin the extension
-
-Click the puzzle icon 🧩 in Chrome's toolbar → find ApplyRadar → click the pin icon.
-
-### Step 4 — Enable site access
-
-Click **Details** on the ApplyRadar card in `chrome://extensions`, then turn on the toggle for all three sites:
-- `https://internshala.com/*`
-- `https://www.linkedin.com/*`
-- `https://www.naukri.com/*`
+1. Clone or download this repo
+2. Go to `chrome://extensions`
+3. Enable **Developer mode** (top-right toggle)
+4. Click **Load unpacked** → select the `applyradar-v2` folder
+5. Click the puzzle icon 🧩 in Chrome toolbar → pin ApplyRadar
+6. In `chrome://extensions` → click **Details** on ApplyRadar → turn on site access for all 3 sites
 
 ---
 
-## 📖 How to Use
+## 📖 How to Save a Job
 
-### Saving a job
+The **Save to ApplyRadar** button only appears on **detail pages** — not the listing/search feed.
 
-The **Save to ApplyRadar** button appears automatically on job detail pages. Here's how to get to the detail page on each platform:
+### Naukri
 
-#### Naukri
-1. Search for jobs on Naukri as normal
-2. Click any job listing — it opens a detail view on the right panel
-3. **Click the job title** to open it as a full page (the URL will change to something like `naukri.com/job-listings-...`)
-4. The **Save to ApplyRadar** button appears below the job title
+1. Search for jobs → click any listing (details open on the right panel)
+2. **Click the job title** to open it as a full page
+3. URL changes to `naukri.com/job-listings-...` or similar
+4. **Save to ApplyRadar** button appears below the title
 
-> Alternatively: right-click any listing in the search results → **Open in new tab**
+> Shortcut: right-click any listing → **Open in new tab**
 
-#### LinkedIn
-1. Go to `linkedin.com/jobs` and search for roles
-2. Click any listing in the left panel — the details load on the right
-3. **Click the job title text** (it's a link) to open the full detail page
-4. The URL must contain `/jobs/view/` followed by a number — e.g. `linkedin.com/jobs/view/4361498042`
-5. Once on that URL, the **Save to ApplyRadar** button appears next to the Easy Apply button
+### LinkedIn
 
-> If the button doesn't appear: click the **ApplyRadar icon** in your toolbar → the popup shows a **"Save this job"** button that works directly from the popup
+1. Search for jobs → click any listing in the left panel
+2. **Click the job title** (it's a link) to open the full detail page
+3. URL must contain `/jobs/view/` followed by a number — e.g. `linkedin.com/jobs/view/4361498042`
+4. **Save to ApplyRadar** appears next to the Easy Apply button
 
-#### Internshala
-1. Search for internships or jobs on Internshala
-2. Click any listing — it opens a detail page with the URL `internshala.com/internship/detail/...`
-3. The **Save to ApplyRadar** button appears at the top of the page, above "Actively hiring"
+> If the button doesn't appear: click the **ApplyRadar icon** in your toolbar → click **Save this job** in the popup
 
----
+### Internshala
 
-### Opening the dashboard
-
-Click the **ApplyRadar icon** in your Chrome toolbar → click **Open Dashboard**.
-
-The dashboard opens in a new tab showing your full Kanban board.
+1. Click any listing → opens the detail page with URL `internshala.com/internship/detail/...`
+2. **Save to ApplyRadar** appears at the top of the page
 
 ---
 
-### Moving a job between stages
+## 🗂 How to Use Each Feature
 
-**Option 1 — Drag and drop:** Grab any card and drag it to a different column. The column highlights as you hover over it.
+### Kanban board
+Drag any card to a different column, or click a card to open the detail drawer and change status from the dropdown.
 
-**Option 2 — Detail drawer:** Click any card → a drawer opens on the right → change the **Status** dropdown → click **Save changes**.
+### Follow-up reminders
+Click any card → set a **Follow-up Date** → Save. You'll get a Chrome notification on that date reminding you to follow up. Works even when the browser is closed (Chrome handles background alarms).
 
----
+### ATS Scorer
+Go to the **ATS Scorer** tab → paste the job description → paste your resume text (or select a saved resume) → click **Score**. You'll see:
+- A match percentage
+- Keywords your resume already contains ✓
+- Keywords missing from your resume ✗
 
-### Updating notes
+### My Resumes
+Go to the **My Resumes** tab → click **+ New Resume** → paste your resume text → save. Create multiple versions for different roles (e.g. "Product Manager — Startups", "PM — Enterprise"). The ATS Scorer will let you pick which version to compare.
 
-Click any card → the drawer opens → type in the **Notes** field → click **Save changes**. Good for storing interview feedback, recruiter names, follow-up dates.
+### Resume Templates
+The **Templates** tab has 6 curated ATS-friendly templates. All are single-column or clean two-column — no tables, no text boxes. These parse correctly on Naukri, LinkedIn, and company career portals.
 
 ---
 
@@ -126,43 +110,21 @@ Click any card → the drawer opens → type in the **Notes** field → click **
 
 ```
 applyradar-v2/
-├── manifest.json              # Chrome extension config (Manifest V3)
-├── background.js              # Service worker: storage, duplicate detection
+├── manifest.json          # Chrome extension config (Manifest V3)
+├── background.js          # Service worker: storage, duplicate detection, alarms
 ├── content/
-│   ├── shared.js              # Injected save button + already-saved check
-│   ├── naukri.js              # Naukri page detector and job extractor
-│   ├── linkedin.js            # LinkedIn page detector and job extractor
-│   └── internshala.js         # Internshala page detector and job extractor
+│   ├── shared.js          # Injected save button (light mode, already-saved check)
+│   ├── naukri.js          # Naukri detector and extractor
+│   ├── linkedin.js        # LinkedIn detector and extractor
+│   └── internshala.js     # Internshala detector and extractor
 ├── popup/
-│   ├── popup.html             # Toolbar popup UI
-│   └── popup.js               # Stats, quick-save, tab detection
+│   ├── popup.html         # Toolbar popup UI
+│   └── popup.js           # Stats, quick-save via scripting.executeScript
 ├── dashboard/
-│   ├── index.html             # Full dashboard UI
-│   └── dashboard.js           # Kanban, filters, drawer, drag-drop, export
+│   ├── index.html         # Full dashboard with tabs
+│   └── dashboard.js       # Kanban, ATS scorer, resume storage, templates
 └── icons/
-    ├── icon16.png
-    ├── icon48.png
-    └── icon128.png
 ```
-
----
-
-## 🔧 How It Works
-
-### Saving a job
-When you click **Save to ApplyRadar**, the content script reads the visible page DOM and sends the job data to the background service worker via `chrome.runtime.sendMessage`. The service worker writes it to `chrome.storage.local`.
-
-### Duplicate detection
-On every save, the background script checks if any existing job has the same **title + company** (case-insensitive). If yes, it blocks the save and returns a duplicate warning. Jobs already tracked show an orange **⚠ Duplicate** badge on the Kanban card.
-
-### Already-saved state
-When you navigate to a job page, the content script checks `chrome.storage.local` against the current URL before rendering the button. If the job is already saved, it shows a green **✓ Saved to ApplyRadar** button instead — clicking it opens the dashboard.
-
-### LinkedIn title extraction
-LinkedIn renders the job title as a `<p>` element containing a `#verified-medium` SVG badge. The content script locates the SVG by its stable ID, walks up to the parent `<p>`, and extracts direct text nodes — ignoring the SVG and badge children. Company is found via `a[href*="/company/"]` scoped to the main content area.
-
-### Popup save (fallback)
-If the page button fails to appear, opening the popup on a supported job page shows a **Save this job** button. This runs `chrome.scripting.executeScript` to inject an extraction function directly into the live tab — bypassing any timing or rendering issues.
 
 ---
 
@@ -170,27 +132,30 @@ If the page button fails to appear, opening the popup on a supported job page sh
 
 | Limitation | Reason |
 |---|---|
-| Only works on job **detail** pages | The extension needs a single job's data — listing/search pages show 20+ jobs simultaneously |
-| LinkedIn requires `/jobs/view/` URL | Only the full detail page (not the split-panel view) has the complete job card |
-| Salary not always captured on LinkedIn | LinkedIn doesn't consistently show salary in the DOM |
-| Chrome only | Manifest V3 with `scripting` API — Firefox support would need a separate build |
+| Detail pages only | The extension needs a single job — listing feeds show 20+ simultaneously |
+| LinkedIn requires `/jobs/view/` URL | Only the full detail page has the complete job card |
+| Chrome only | Manifest V3 with `scripting` API — Firefox needs a separate build |
+| Selectors may break | LinkedIn/Naukri update their DOM occasionally — open an issue with the HTML if something breaks |
 
 ---
 
 ## 🗺 Roadmap
 
-- [ ] ATS resume scorer — compare job description keywords against your resume
-- [ ] Resume templates page — curated ATS-friendly templates for Indian recruiters
-- [ ] Follow-up date reminders with browser notifications
-- [ ] Job recommendation feed based on your saved roles
-- [ ] Notes sync to cloud (Supabase)
+- [ ] Cloud sync (Supabase) — access your tracker from any device
+- [ ] Email reminders — weekly digest of pending applications
 - [ ] Firefox support
+- [ ] AI-powered resume suggestions (Pro tier)
 
 ---
 
 ## 🤝 Contributing
 
-Issues and PRs welcome. If a selector breaks (job platforms update their DOM regularly), open an issue with the page HTML and the broken selector — fixes are usually a one-liner.
+Open source under MIT. If a platform updates their DOM and a selector breaks, open an issue with:
+1. The platform (Naukri/LinkedIn/Internshala)
+2. The page URL (just the path, no need for the full URL with tracking params)
+3. The HTML of the element containing the job title
+
+Fixes are usually a one-liner.
 
 ---
 
