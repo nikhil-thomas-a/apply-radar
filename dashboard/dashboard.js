@@ -109,17 +109,53 @@ function renderKanban(){
   initDrag()
 }
 
+// Parse a deadline string into days remaining (positive = future, negative = past, null = unparseable)
+function parseDeadline(str){
+  if(!str) return null
+  // Try "16 Apr '26", "16 Apr 2026", "16-Apr-2026", "Apr 16 2026"
+  const clean=str.replace(/'/g,'20').replace(/[-,]/g,' ').trim()
+  const d=new Date(clean)
+  if(!isNaN(d)){
+    const today=new Date();today.setHours(0,0,0,0);d.setHours(0,0,0,0)
+    return Math.round((d-today)/(1000*60*60*24))
+  }
+  // Try "16 Apr" (assume current year)
+  const m=clean.match(/(\d{1,2})\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i)
+  if(m){
+    const d2=new Date(`${m[2]} ${m[1]} ${new Date().getFullYear()}`)
+    if(!isNaN(d2)){
+      const today=new Date();today.setHours(0,0,0,0);d2.setHours(0,0,0,0)
+      return Math.round((d2-today)/(1000*60*60*24))
+    }
+  }
+  return null
+}
+
 function renderCard(job){
   const dateStr=new Date(job.savedAt).toLocaleDateString('en-IN',{day:'numeric',month:'short'})
   const today=new Date();today.setHours(0,0,0,0)
   const fuDate=job.followUpDate?new Date(job.followUpDate):null
   const fuOverdue=fuDate&&fuDate<today, fuToday=fuDate&&fuDate.toDateString()===today.toDateString()
+  // Deadline urgency — parse deadline string into days remaining
+  let deadlineTag = ''
+  if(job.deadline){
+    const dl=parseDeadline(job.deadline)
+    if(dl!==null){
+      if(dl<0) deadlineTag=`<span class="tag tag-urgent">⚠ Deadline passed</span>`
+      else if(dl===0) deadlineTag=`<span class="tag tag-urgent">🔴 Due today!</span>`
+      else if(dl<=3) deadlineTag=`<span class="tag tag-urgent">🔴 Due in ${dl}d</span>`
+      else if(dl<=7) deadlineTag=`<span class="tag tag-warn">🟡 Due in ${dl}d</span>`
+      else deadlineTag=`<span class="tag">⏰ Due ${esc(job.deadline)}</span>`
+    } else {
+      deadlineTag=`<span class="tag">⏰ Due ${esc(job.deadline)}</span>`
+    }
+  }
   const tags=[
     job.location&&`<span class="tag">📍 ${esc(job.location.substring(0,22))}</span>`,
     job.salary&&`<span class="tag">💰 ${esc(job.salary.substring(0,20))}</span>`,
     job.experience&&`<span class="tag">⏱ ${esc(job.experience.substring(0,18))}</span>`,
     job.jobType&&`<span class="tag">${esc(job.jobType)}</span>`,
-    job.deadline&&`<span class="tag">⏰ Due ${esc(job.deadline)}</span>`,
+    job.deadline&&deadlineTag,
     job.duration&&`<span class="tag">📅 ${esc(job.duration)}</span>`,
     job.type==='internship'&&`<span class="tag">Internship</span>`,
     fuDate&&`<span class="tag followup">${fuOverdue?'⚠ Overdue':fuToday?'📌 Follow up today':'📌 '+fuDate.toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</span>`,
@@ -299,46 +335,17 @@ function renderScoreResults(containerId, jdText, resumeText, jobTitle){
     </div>`
 }
 
-// ── ATS Mode toggle ─────────────────────────────────────────────────────────
-let atsMode = 'parse'
+// ── ATS Parse Check init ────────────────────────────────────────────────────
 function initATSModes(){
-  // Parse Check is default — hide JD section on load
-  const jdSection=document.getElementById('ats-jd-section')
-  if(jdSection) jdSection.style.display='none'
   document.getElementById('ats-results').innerHTML=
-    '<div class="hint-box">Paste or select your resume, then click <strong>Analyse</strong>.<br><br>ATS Parse Check simulates what an ATS or AI screening bot sees when it reads your resume — section detection, contact info, date formatting, action verbs, quantification, and structural issues.</div>'
-
-  document.querySelectorAll('.ats-mode-btn').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      document.querySelectorAll('.ats-mode-btn').forEach(b=>b.classList.remove('active'))
-      btn.classList.add('active')
-      atsMode=btn.dataset.mode
-      const jdSection=document.getElementById('ats-jd-section')
-      if(jdSection) jdSection.style.display=atsMode==='parse'?'none':''
-      const subtitle=document.getElementById('ats-subtitle')
-      if(subtitle) subtitle.textContent=atsMode==='parse'
-        ?'Check how well your resume will parse through ATS and AI screening bots.'
-        :'Compare your resume keywords against a specific job description.'
-      document.getElementById('ats-results').innerHTML=`<div class="hint-box">${
-        atsMode==='keywords'
-          ?'Paste or select a job description and your resume, then click <strong>Analyse</strong>.'
-          :'Paste or select your resume, then click <strong>Analyse</strong>.'
-      }</div>`
-    })
-  })
+    '<div class="hint-box">Paste or load your resume, then click <strong>Run ATS Check</strong>.<br><br>This simulates what an ATS or AI screening bot sees when it scans your resume — checking contact info, section structure, date formatting, action verbs, quantified achievements, and formatting issues.</div>'
 }
 
-// ── ATS Scorer ───────────────────────────────────────────────────────────────
+// ── ATS Scorer — parse only ──────────────────────────────────────────────────
 function scoreATS(){
-  const jd=document.getElementById('ats-jd').value.trim()
   const resume=document.getElementById('ats-resume').value.trim()
-  if(!resume){toast('Paste your resume text first');return}
-  if(atsMode==='keywords'){
-    if(!jd){toast('Paste a job description first');return}
-    renderScoreResults('ats-results',jd,resume,'')
-  } else {
-    renderATSParseCheck('ats-results',resume)
-  }
+  if(!resume){toast('Paste or load your resume first');return}
+  renderATSParseCheck('ats-results',resume)
 }
 
 // ── ATS Parse Check ──────────────────────────────────────────────────────────
@@ -491,21 +498,30 @@ function initJdMatch(){
 }
 
 function scoreJdMatch(){
-  const jobId=document.getElementById('jdm-job-select').value
-  const resumeId=document.getElementById('jdm-resume-select').value
-  if(!jobId){toast('Select a job first');return}
-  if(!resumeId){toast('Select a resume first');return}
-  const job=allJobs.find(j=>j.id===jobId)
-  const resume=getResumeById(resumeId)
-  if(!job||!resume){toast('Could not find job or resume');return}
-  // Use pasted JD text if provided, otherwise fall back to metadata
-  const pastedJd=(document.getElementById('jdm-jd-text')?.value||'').trim()
-  const jdText = pastedJd ||
-    [job.title, job.company, job.location||'', job.experience||'', job.jobType||''].join(' ')
+  // JD: prefer pasted text, fall back to saved job metadata
+  const pastedJd = (document.getElementById('jdm-jd-text')?.value||'').trim()
+  const jobId = document.getElementById('jdm-job-select').value
+  const selectedJob = allJobs.find(j=>j.id===jobId)
+
+  let jdText = pastedJd
+  let jdLabel = 'Pasted JD'
+  if(!pastedJd && selectedJob) {
+    jdText = [selectedJob.title, selectedJob.company, selectedJob.location||'', selectedJob.experience||'', selectedJob.jobType||''].join(' ')
+    jdLabel = `${selectedJob.title} @ ${selectedJob.company} (metadata only)`
+  }
+  if(!jdText){toast('Paste a job description or select a saved job');return}
+
+  // Resume: prefer pasted text, fall back to saved resume
+  const pastedResume = (document.getElementById('jdm-resume-text')?.value||'').trim()
+  const resumeId = document.getElementById('jdm-resume-select').value
+  const savedResume = getResumeById(resumeId)
+  const resumeText = pastedResume || savedResume?.text || ''
+  if(!resumeText){toast('Paste your resume or select a saved resume');return}
+
   const label = pastedJd
-    ? `${job.title} @ ${job.company} (full JD)`
-    : `${job.title} @ ${job.company} (metadata only — paste JD for better results)`
-  renderScoreResults('jdm-results', jdText, resume.text, label)
+    ? jdLabel
+    : `${jdLabel} — paste the full JD for a more accurate score`
+  renderScoreResults('jdm-results', jdText, resumeText, label)
 }
 
 // ── Dropdowns for ATS + JD Match ─────────────────────────────────────────────
@@ -517,12 +533,7 @@ function refreshDropdowns(){
     const cur=atsSel.value
     atsSel.innerHTML=`<option value="">— Load from saved resumes —</option>`+resumes.map(r=>`<option value="${r.id}" ${r.id===cur?'selected':''}>${esc(r.name)}</option>`).join('')
   }
-  // ATS scorer job dropdown
-  const atsJobSel=document.getElementById('ats-job-select')
-  if(atsJobSel){
-    const cur=atsJobSel.value
-    atsJobSel.innerHTML=`<option value="">— Load from saved jobs —</option>`+allJobs.map(j=>`<option value="${j.id}" ${j.id===cur?'selected':''}>${esc(j.title)} — ${esc(j.company)}</option>`).join('')
-  }
+  // ATS scorer no longer has a job dropdown (parse-only mode)
   // JD match job dropdown
   const jdJobSel=document.getElementById('jdm-job-select')
   if(jdJobSel){
@@ -582,7 +593,7 @@ const TEMPLATES=[
   {name:"Jake's Resume",desc:"The most ATS-tested single-column LaTeX template. Used by thousands of Indian engineers targeting product companies and startups. Clean, minimal, no tables.",tags:["LaTeX","Engineering","Startups","Free"],hi:true,url:"https://www.overleaf.com/latex/templates/jakes-resume/syzfjbzwjncs",label:"Open in Overleaf"},
   {name:"Deedy CV",desc:"Popular two-column template from a Google engineer. Works well for experienced candidates. Naukri parsers handle it well.",tags:["LaTeX","Experienced","Two-column","Free"],hi:false,url:"https://www.overleaf.com/latex/templates/deedy-cv/bjryvfsjdyxz",label:"Open in Overleaf"},
   {name:"AltaCV",desc:"Modern two-column template with good spacing. Works for non-technical roles. Clean enough for Internshala and LinkedIn applications.",tags:["LaTeX","Non-technical","Modern","Free"],hi:false,url:"https://www.overleaf.com/latex/templates/altacv-template/trgqjpwnmtgv",label:"Open in Overleaf"},
-  {name:"Google Docs — Simple",desc:"Clean single-column Google Doc template. Beginner-friendly, no LaTeX needed. Export to PDF directly. Safe for Naukri, LinkedIn, and company portals.",tags:["Google Docs","Beginner","ATS-safe","Free"],hi:true,url:"https://docs.google.com/document/d/1_8c1SoiIxBwbzFqrSGhXjqQMp7pq9GlXfAeVOPLJtc4/copy",label:"Make a Copy →"},
+  {name:"Google Docs Templates",desc:"Google Docs' built-in resume templates. Choose Coral, Spearmint or Modern Writer — all single-column and ATS-safe. Free, no LaTeX needed, export to PDF directly.",tags:["Google Docs","Beginner","ATS-safe","Free"],hi:true,url:"https://docs.google.com/document/u/0/?ftv=1&tgif=d",label:"Browse Templates →"},
   {name:"Resumake",desc:"Open-source online resume builder with multiple clean templates. Export to PDF instantly. Good for freshers.",tags:["Online","Beginner","Open-source","Free"],hi:false,url:"https://resumake.io",label:"Open Resumake"},
   {name:"Flowcv",desc:"Web-based builder with ATS-optimised templates. Free tier covers most use cases. Popular with startup applicants.",tags:["Online","Modern","Freemium"],hi:false,url:"https://flowcv.com",label:"Open Flowcv"},
 ]
@@ -619,15 +630,22 @@ document.getElementById('new-resume-btn').addEventListener('click',()=>{activeRe
 document.getElementById('resume-save-btn').addEventListener('click',saveCurrentResume)
 document.getElementById('resume-delete-btn').addEventListener('click',deleteCurrentResume)
 
-document.getElementById('ats-job-select')?.addEventListener('change',function(){
-  const job=allJobs.find(j=>j.id===this.value)
-  if(job){
-    const pseudoJd=[job.title,job.company,job.location||'',job.salary||'',job.experience||'',job.jobType||''].join(' ')
-    document.getElementById('ats-jd').value=pseudoJd
-  }
+// Resume Match listeners
+document.getElementById('jdm-resume-select')?.addEventListener('change',function(){
+  const r=getResumeById(this.value)
+  if(r) document.getElementById('jdm-resume-text').value=r.text
+})
+document.getElementById('jdm-job-select')?.addEventListener('change',function(){
+  // Just update the dropdown value; scoreJdMatch reads it when Compare is clicked
 })
 
 chrome.storage.onChanged.addListener(changes=>{if(changes.jobs){allJobs=changes.jobs.newValue||[];detectDups();applyFilters();updateSidebar()}})
 
 // Init
+// Inject deadline tag styles
+;(function(){
+  const s=document.createElement('style')
+  s.textContent='.tag-urgent{color:#dc2626!important;background:#fef2f2!important;border:1px solid #dc262633!important;font-weight:700}.tag-warn{color:#d97706!important;background:#fffbeb!important;border:1px solid #d9770633!important;font-weight:600}'
+  document.head.appendChild(s)
+})()
 initTheme();initTabs();initJdMatch();initATSModes();renderTemplates();renderResumeList();refreshDropdowns();loadJobs()

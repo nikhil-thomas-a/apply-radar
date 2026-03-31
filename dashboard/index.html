@@ -202,9 +202,6 @@
     .toast.show{transform:translateX(-50%) translateY(0)}
 
 
-    /* ATS mode toggle */
-    .ats-mode-btn { font-size:12px; padding:5px 12px; }
-    .ats-mode-btn.active { background:var(--accent); color:var(--bg); border-color:var(--accent); }
 
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
     .fade-in{animation:fadeIn .3s ease both}
@@ -296,30 +293,18 @@
         <div style="flex-shrink:0;display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
           <div>
             <div style="font-size:15px;font-weight:700;margin-bottom:4px">ATS Resume Scorer</div>
-            <div style="font-size:12px;color:var(--text-2)" id="ats-subtitle">Check how well your resume will parse through ATS and AI screening bots.</div>
+            <div style="font-size:12px;color:var(--text-2)">Simulates what an ATS or AI screening bot sees when it reads your resume — before any human ever sees it.</div>
           </div>
-          <div style="display:flex;gap:6px;flex-shrink:0">
-            <button class="btn btn-ghost ats-mode-btn active" data-mode="parse" id="mode-parse">ATS Parse Check</button>
-            <button class="btn btn-ghost ats-mode-btn" data-mode="keywords" id="mode-keywords">Keyword Match</button>
-          </div>
+
         </div>
         <div class="two-panel">
           <div class="panel">
-            <div id="ats-jd-section">
-              <div class="panel-label" style="margin-bottom:6px">Job Description <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim)">(or select saved job)</span></div>
-              <select class="select-input" id="ats-job-select" style="margin-bottom:8px">
-                <option value="">— Load from saved jobs —</option>
-              </select>
-              <textarea class="panel-textarea" id="ats-jd" placeholder="Paste the job description here…&#10;&#10;Include the full description for best results." style="flex:1;min-height:120px"></textarea>
-            </div>
-            <div>
-              <div class="panel-label" style="margin-bottom:6px;margin-top:8px">Your Resume <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim)">(or select saved resume)</span></div>
-              <select class="select-input" id="ats-resume-select" style="margin-bottom:8px">
-                <option value="">— Load from saved resumes —</option>
-              </select>
-              <textarea class="panel-textarea" id="ats-resume" placeholder="Paste your resume as plain text…&#10;&#10;Include skills, experience bullets, education." style="flex:1;min-height:120px"></textarea>
-            </div>
-            <button class="btn btn-accent" id="ats-score-btn" style="flex-shrink:0;margin-top:4px">Analyse →</button>
+            <div class="panel-label" style="margin-bottom:6px">Your Resume <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim)">(paste or load saved)</span></div>
+            <select class="select-input" id="ats-resume-select" style="margin-bottom:8px;flex-shrink:0">
+              <option value="">— Load from saved resumes —</option>
+            </select>
+            <textarea class="panel-textarea" id="ats-resume" placeholder="Paste your full resume as plain text.&#10;&#10;Include: contact info, work experience with dates, education, and skills. Plain text copied from your resume PDF or Word doc works well."></textarea>
+            <button class="btn btn-accent" id="ats-score-btn" style="flex-shrink:0;margin-top:4px">Run ATS Check →</button>
           </div>
           <div class="panel">
             <div class="panel-label">Results</div>
@@ -332,39 +317,42 @@
         </div>
       </div>
 
-      <!-- Resume Match: pick saved job + saved resume → compare -->
+      <!-- Resume Match: keyword matching with JD source flexibility -->
       <div class="page" id="page-jdmatch">
         <div style="flex-shrink:0">
           <div style="font-size:15px;font-weight:700;margin-bottom:4px">Resume Match</div>
-          <div style="font-size:12px;color:var(--text-2)">Select one of your tracked jobs and a saved resume — see which version fits best.</div>
+          <div style="font-size:12px;color:var(--text-2)">Compare your resume against a job description — see keyword match rate and what to add.</div>
         </div>
         <div class="two-panel">
-          <div class="panel" style="gap:16px">
-            <div>
-              <div class="panel-label" style="margin-bottom:8px">Select a tracked job</div>
-              <select class="select-input" id="jdm-job-select">
-                <option value="">— Pick a saved job —</option>
+          <div class="panel" style="gap:12px">
+            <div style="flex-shrink:0">
+              <div class="panel-label" style="margin-bottom:6px">Job Description</div>
+              <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
+                <select class="select-input" id="jdm-job-select" style="flex:1">
+                  <option value="">— Load from saved jobs (uses metadata) —</option>
+                </select>
+              </div>
+              <textarea class="panel-textarea" id="jdm-jd-text" placeholder="Paste the full job description here.&#10;&#10;For best results paste the complete JD — requirements, responsibilities, and skills sections. The more text, the more accurate the keyword match." style="min-height:180px"></textarea>
+            </div>
+            <div style="flex-shrink:0">
+              <div class="panel-label" style="margin-bottom:6px">Your Resume</div>
+              <select class="select-input" id="jdm-resume-select" style="margin-bottom:8px">
+                <option value="">— Load from saved resumes —</option>
               </select>
+              <textarea class="panel-textarea" id="jdm-resume-text" placeholder="Paste your resume text here, or select a saved resume above." style="min-height:100px"></textarea>
             </div>
-            <div>
-              <div class="panel-label" style="margin-bottom:8px">Select a resume</div>
-              <select class="select-input" id="jdm-resume-select">
-                <option value="">— Pick a saved resume —</option>
-              </select>
-            </div>
-            <div id="jdm-job-preview" style="flex-shrink:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;font-size:12px;color:var(--text-2);font-family:'DM Mono',monospace;line-height:1.6">
-              Select a job above to preview its details here.
-            </div>
-            <div>
-              <div class="panel-label" style="margin-bottom:6px">Job Description <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim)">(paste for accurate matching)</span></div>
-              <textarea class="panel-textarea" id="jdm-jd-text" placeholder="Paste the full job description here for accurate keyword matching.&#10;&#10;If left empty, matching uses job title + saved metadata only." style="min-height:140px;flex:1"></textarea>
-            </div>
-            <button class="btn btn-accent" id="jdm-score-btn">Compare →</button>
+            <button class="btn btn-accent" id="jdm-score-btn" style="flex-shrink:0">Match →</button>
           </div>
           <div class="panel">
             <div class="panel-label">Results</div>
             <div class="panel-scroll" id="jdm-results">
-              <div class="hint-box">Select a tracked job and a saved resume, then click <strong>Compare</strong>.</div>
+              <div class="hint-box">
+                How to use Resume Match:<br><br>
+                1. Paste the full job description (or select a saved job)<br>
+                2. Paste your resume or select a saved version<br>
+                3. Click <strong>Match</strong> to see which keywords you have and which to add<br><br>
+                Tip: Try different saved resume versions to see which fits the role best.
+              </div>
             </div>
           </div>
         </div>

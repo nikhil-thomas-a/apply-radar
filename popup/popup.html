@@ -174,14 +174,12 @@
     .recent-list { background: var(--surface); }
     .recent-item {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 10px;
       padding: 8px 16px;
       border-top: 1px solid var(--border);
-      cursor: pointer;
       transition: background 0.1s;
     }
-    .recent-item:hover { background: var(--surface-2); }
     .recent-plat {
       width: 6px; height: 6px;
       border-radius: 50%;
@@ -196,17 +194,36 @@
       font-size: 11px; color: var(--text-2);
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .status-pill {
+    /* Status inline dropdown */
+    .status-wrap { flex-shrink: 0; }
+    .status-select {
       font-size: 10px; font-family: 'DM Mono', monospace;
-      padding: 2px 7px; border-radius: 99px;
-      text-transform: uppercase; letter-spacing: 0.04em;
-      flex-shrink: 0;
+      padding: 3px 6px; border-radius: 6px;
+      border: 1px solid var(--border);
+      cursor: pointer; outline: none;
+      font-weight: 600; letter-spacing: 0.03em;
+      appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 5px center;
+      padding-right: 18px;
+      max-width: 84px;
+      transition: all 0.12s;
     }
-    .s-saved    { background:#eff6ff; color:#2563eb; }
-    .s-applied  { background:#f0fdf4; color:#16a34a; }
-    .s-interview{ background:#fffbeb; color:#d97706; }
-    .s-offer    { background:#f0fdf4; color:#15803d; }
-    .s-rejected { background:#fef2f2; color:#dc2626; }
+    .status-select:hover { border-color: var(--accent); }
+    .s-saved     { background:#eff6ff; color:#2563eb; border-color:#2563eb33; }
+    .s-applied   { background:#f0fdf4; color:#16a34a; border-color:#16a34a33; }
+    .s-interview { background:#fffbeb; color:#d97706; border-color:#d9770633; }
+    .s-offer     { background:#f0fdf4; color:#15803d; border-color:#15803d33; }
+    .s-rejected  { background:#fef2f2; color:#dc2626; border-color:#dc262633; }
+
+    /* Deadline badges */
+    .deadline-badge {
+      font-size: 10px; font-family: 'DM Mono', monospace;
+      color: var(--text-dim); margin-top: 2px; display: inline-block;
+    }
+    .deadline-badge.urgent { color: #dc2626; font-weight: 700; }
+    .deadline-badge.warn   { color: #d97706; font-weight: 600; }
 
     /* ── Empty ── */
     .empty {
