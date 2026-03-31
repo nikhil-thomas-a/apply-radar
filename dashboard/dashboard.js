@@ -280,20 +280,21 @@ function renderScoreResults(containerId, jdText, resumeText, jobTitle){
   const verdict=score>=80?'Strong match — resume aligns well with this role.':score>=60?'Good match — consider adding the missing keywords where relevant.':'Weak match — resume is missing many key terms from this JD.'
   document.getElementById(containerId).innerHTML=`
     <div class="score-card">
-      ${jobTitle?`<div style="font-size:12px;color:var(--text-2);font-family:'DM Mono',monospace">${esc(jobTitle)}</div>`:''}
+      ${jobTitle?`<div style="font-size:11px;color:var(--text-2);font-family:'DM Mono',monospace;margin-bottom:4px">${esc(jobTitle)}</div>`:''}
       <div class="score-big">
         <div class="score-number" style="color:${color}">${score}%</div>
         <div class="score-sublabel">keyword match rate</div>
       </div>
       <div class="score-bar-wrap"><div class="score-bar" style="width:${score}%;background:${color}"></div></div>
       <div class="hint-box">${verdict}</div>
-      <div class="kw-section">
+      ${matched.length>0?`<div class="kw-section">
         <div class="kw-label">✓ ${matched.length} keywords matched</div>
         <div class="kw-chips">${matched.slice(0,25).map(k=>`<span class="kw-chip kw-match">${esc(k)}</span>`).join('')}</div>
-      </div>
+      </div>`:''}
       ${missed.length>0?`<div class="kw-section">
-        <div class="kw-label">✗ ${missed.length} keywords missing from resume</div>
-        <div class="kw-chips">${missed.map(k=>`<span class="kw-chip kw-miss">${esc(k)}</span>`).join('')}</div>
+        <div class="kw-label">✗ ${missed.length} keywords to add to resume</div>
+        <div class="kw-chips">${missed.slice(0,20).map(k=>`<span class="kw-chip kw-miss">${esc(k)}</span>`).join('')}</div>
+        ${missed.length>20?`<div style="font-size:11px;color:var(--text-dim);margin-top:6px;font-family:'DM Mono',monospace">+${missed.length-20} more</div>`:''}
       </div>`:''}
     </div>`
 }
@@ -305,7 +306,7 @@ function initATSModes(){
   const jdSection=document.getElementById('ats-jd-section')
   if(jdSection) jdSection.style.display='none'
   document.getElementById('ats-results').innerHTML=
-    '<div class="hint-box">Paste or select your resume below, then click <strong>Analyse</strong> to simulate ATS parsing.<br><br>Switch to <strong>Keyword Match</strong> to compare your resume against a specific job description.</div>'
+    '<div class="hint-box">Paste or select your resume, then click <strong>Analyse</strong>.<br><br>ATS Parse Check simulates what an ATS or AI screening bot sees when it reads your resume — section detection, contact info, date formatting, action verbs, quantification, and structural issues.</div>'
 
   document.querySelectorAll('.ats-mode-btn').forEach(btn=>{
     btn.addEventListener('click',()=>{
@@ -314,10 +315,14 @@ function initATSModes(){
       atsMode=btn.dataset.mode
       const jdSection=document.getElementById('ats-jd-section')
       if(jdSection) jdSection.style.display=atsMode==='parse'?'none':''
+      const subtitle=document.getElementById('ats-subtitle')
+      if(subtitle) subtitle.textContent=atsMode==='parse'
+        ?'Check how well your resume will parse through ATS and AI screening bots.'
+        :'Compare your resume keywords against a specific job description.'
       document.getElementById('ats-results').innerHTML=`<div class="hint-box">${
         atsMode==='keywords'
-          ?'Paste or select a job description and resume, then click <strong>Analyse</strong>.'
-          :'Paste or select your resume, then click <strong>Analyse</strong> to simulate ATS parsing.'
+          ?'Paste or select a job description and your resume, then click <strong>Analyse</strong>.'
+          :'Paste or select your resume, then click <strong>Analyse</strong>.'
       }</div>`
     })
   })
@@ -345,89 +350,98 @@ function renderATSParseCheck(containerId, resumeText){
   // 1. Contact info
   const hasEmail = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(resumeText)
   const hasPhone = /(\+91|91)?[\s-]?[6-9]\d{9}|(\+\d{1,3}[\s-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/.test(resumeText)
-  const hasLinkedIn = /linkedin\.com\/in\//i.test(resumeText)
+  // Match linkedin.com/in/ with or without https:// or www.
+  const hasLinkedIn = /(?:https?:\/\/)?(?:www\.)?linkedin\.com\/(in|pub|profile)\/[\w-]/i.test(resumeText)
   checks.push({
     label:'Contact Information',
     pass: hasEmail && hasPhone,
     items:[
       {ok:hasEmail, text:'Email address found'},
       {ok:hasPhone, text:'Phone number found'},
-      {ok:hasLinkedIn, text:'LinkedIn URL found (recommended)'},
+      {ok:true, soft:!hasLinkedIn, text: hasLinkedIn ? 'LinkedIn profile URL detected ✓' : 'LinkedIn URL not found — add linkedin.com/in/your-profile (recommended)'},
     ]
   })
 
-  // 2. Section headings
-  const sectionKws = { experience:/(experience|work history|employment|professional background)/i, education:/(education|academic|qualification|degree)/i, skills:/(skills|technical skills|core competencies|technologies)/i }
-  const foundSections = { experience: sectionKws.experience.test(resumeText), education: sectionKws.education.test(resumeText), skills: sectionKws.skills.test(resumeText) }
+  // 2. Section headings — broad detection
+  const hasExp = /\b(experience|work history|employment|worked at|working at|company|organisation|organization|intern|internship|trainee|associate|analyst|engineer|manager|developer|consultant|executive|officer|specialist|coordinator)\b/i.test(resumeText)
+  const hasEdu = /\b(education|university|college|institute|school|b\.?tech|b\.?e\.|mba|m\.?tech|bca|bsc|msc|b\.?com|m\.?com|degree|graduate|graduation|pgdm|diploma|ssc|hsc)\b/i.test(resumeText)
+  const hasSkills = /\b(skills|technologies|tools|technical|proficient|expertise|competencies|languages|frameworks|platforms|software|programming|certified|certification)\b/i.test(resumeText)
   checks.push({
     label:'Required Sections',
-    pass: foundSections.experience && foundSections.education && foundSections.skills,
+    pass: hasExp && hasEdu && hasSkills,
     items:[
-      {ok:foundSections.experience, text:'Experience section found'},
-      {ok:foundSections.education,  text:'Education section found'},
-      {ok:foundSections.skills,     text:'Skills section found'},
+      {ok:hasExp, text: hasExp ? 'Work experience content detected' : 'Experience section not found — add a clear "Experience" heading'},
+      {ok:hasEdu, text: hasEdu ? 'Education content detected' : 'Education section not found — add degree, institution, and year'},
+      {ok:hasSkills, text: hasSkills ? 'Skills/Technologies content detected' : 'Skills section not found — add a "Technical Skills" section'},
     ]
   })
 
-  // 3. Date formats
-  const dateFormats = [/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+\d{4}/i,/\d{4}\s*[-–—]\s*(present|current|now|\d{4})/i,/(19|20)\d{2}\s*[-–—]\s*(present|current|now|(19|20)\d{2})/i]
-  const hasDates = dateFormats.some(r=>r.test(resumeText))
-  const hasPresent = /(present|current)/i.test(resumeText)
+  // 3. Date formats — comprehensive Indian resume patterns
+  const hasDates = [
+    /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z']*[. ]+\d{2,4}\b/i,
+    /\b\d{4}\s*[-\u2013\u2014]+\s*(present|current|now|till date|ongoing|\d{2,4})\b/i,
+    /\b(19|20)\d{2}\s*-\s*\d{2}\b/i,
+    /\b\d{4}\s+to\s+(present|current|(19|20)\d{2})\b/i,
+  ].some(r => r.test(resumeText))
+  const hasPresent = /\b(present|current|till date|ongoing)\b/i.test(resumeText)
   checks.push({
     label:'Date Formatting',
     pass: hasDates,
     items:[
-      {ok:hasDates, text:'Employment dates found (e.g. Jan 2022 – Present)'},
-      {ok:hasPresent, text:'Current role marked as "Present" or "Current"'},
+      {ok:hasDates, text: hasDates ? 'Employment date ranges detected' : 'No date ranges found — add start/end dates to each role (e.g. "Jun 2022 – Present")'},
+      {ok:hasPresent, text: hasPresent ? 'Current role shows "Present" or equivalent ✓' : 'Tip: Mark your current role end date as "Present"'},
     ]
   })
 
   // 4. Action verbs
-  const actionVerbs = ['managed','led','developed','designed','built','implemented','created','improved','increased','reduced','delivered','launched','coordinated','analysed','analyzed','optimised','optimized','collaborated','spearheaded','achieved','streamlined','automated','deployed','maintained','executed']
-  const verbsFound = actionVerbs.filter(v=>new RegExp('\\b'+v,'i').test(resumeText))
-  const goodVerbs = verbsFound.length >= 5
+  const actionVerbs = ['managed','led','developed','designed','built','implemented','created','improved','increased','reduced','delivered','launched','coordinated','analysed','analyzed','optimised','optimized','collaborated','spearheaded','achieved','streamlined','automated','deployed','maintained','executed','oversaw','established','initiated','drove','scaled','mentored','trained','negotiated','resolved','generated','presented','reported','handled','conducted','facilitated','evaluated','monitored']
+  const verbsFound = actionVerbs.filter(v => new RegExp('\\b'+v+'\\b','i').test(resumeText))
+  const goodVerbs = verbsFound.length >= 4
   checks.push({
     label:'Action Verbs',
     pass: goodVerbs,
     items:[
-      {ok:goodVerbs, text:`${verbsFound.length} strong action verbs found (need 5+)`},
-      {ok:verbsFound.length>0, text:verbsFound.length>0?`e.g. ${verbsFound.slice(0,4).join(', ')}`:'No action verbs detected'},
+      {ok:goodVerbs, text: `${verbsFound.length} strong action verbs detected (minimum 4)`},
+      {ok:verbsFound.length>0, text: verbsFound.length>0 ? `Found: ${verbsFound.slice(0,5).join(', ')}${verbsFound.length>5?'…':''}` : 'None found — start bullets with: managed, developed, analysed, improved, delivered'},
     ]
   })
 
   // 5. Quantification
-  const numbers = resumeText.match(/\d+[\s%+xX]*(million|lakh|crore|thousand|%|users|customers|team|projects|people|years|months|days|hrs|hours|times|x|X)?/g)||[]
-  const hasQuantification = numbers.length >= 3
+  const allNums = (resumeText.match(/\b\d{2,}\b/g)||[]).length
+  const metricNums = (resumeText.match(/\d+\s*(%|x\b|lakh|crore|thousand|million|users|customers|team|members|projects)/gi)||[]).length
+  const hasQuant = metricNums >= 1 || allNums >= 4
   checks.push({
     label:'Quantified Achievements',
-    pass: hasQuantification,
+    pass: hasQuant,
     items:[
-      {ok:hasQuantification, text:`${numbers.length} numbers/metrics found (aim for 5+ to show impact)`},
-      {ok:numbers.length>=5, text:numbers.length>=5?'Good quantification of achievements':'Add more numbers — e.g. "Improved performance by 40%"'},
+      {ok:hasQuant, text: hasQuant ? 'Numerical metrics detected — good for ATS ranking' : 'No clear metrics — add numbers like "Improved efficiency by 30%", "Managed team of 5"'},
+      {ok:allNums>=5, text: allNums>=5 ? `${allNums} numeric values in resume ✓` : 'Aim for 3–5 measurable achievements with specific numbers'},
     ]
   })
 
   // 6. Length
   const wordCount = resumeText.split(/\s+/).filter(Boolean).length
-  const goodLength = wordCount >= 300 && wordCount <= 800
+  const goodLength = wordCount >= 200 && wordCount <= 900
   checks.push({
     label:'Resume Length',
     pass: goodLength,
     items:[
-      {ok:wordCount>=300, text:wordCount<300?`Only ${wordCount} words — too short (aim for 300–800)`:`${wordCount} words total`},
-      {ok:wordCount<=800, text:wordCount>800?`${wordCount} words — consider trimming to under 800 for ATS`:'Within recommended length'},
+      {ok:wordCount>=200, text: wordCount<200 ? `Only ${wordCount} words — too brief, add more detail` : `${wordCount} words total`},
+      {ok:wordCount<=900, text: wordCount>900 ? `At ${wordCount} words, consider trimming for a clean 1-page resume` : 'Length is appropriate ✓'},
     ]
   })
 
-  // 7. Formatting red flags
-  const hasTableKeywords = /\|{2,}|\+[-+]+\+/.test(resumeText)
-  const hasSpecialChars = (resumeText.match(/[★✓✗•●■□▶]/g)||[]).length > 10
+  // 7. Formatting
+  const hasTableChars = /\|{2,}|\+[-+]{3,}\+/.test(resumeText)
+  const excessSpecial = (resumeText.match(/[\u2605\u2713\u2717\u25cf\u25a0\u25a1\u25b6\u25c6\u25ba]/g)||[]).length > 8
+  const allCapsCount = resumeText.split('\n').filter(l=>l.trim().length>8&&l.trim()===l.trim().toUpperCase()).length
   checks.push({
     label:'ATS-Friendly Formatting',
-    pass: !hasTableKeywords,
+    pass: !hasTableChars && !excessSpecial,
     items:[
-      {ok:!hasTableKeywords, text:hasTableKeywords?'⚠ Possible table detected — ATS may misread':'No table formatting detected'},
-      {ok:!hasSpecialChars, text:hasSpecialChars?'Too many special characters — some ATS systems strip them':'Special character usage looks fine'},
+      {ok:!hasTableChars, text: hasTableChars ? '⚠ Table structure detected — use plain text lines instead' : 'No table formatting detected ✓'},
+      {ok:!excessSpecial, text: excessSpecial ? 'Too many special symbols — some ATS systems strip these' : 'Symbol usage looks clean ✓'},
+      {ok:allCapsCount<=3, soft:allCapsCount>3, text: allCapsCount>3 ? `${allCapsCount} ALL-CAPS lines — use Title Case for headings` : 'Heading capitalisation looks fine ✓'},
     ]
   })
 
@@ -453,8 +467,12 @@ function renderATSParseCheck(containerId, resumeText){
             <span style="font-size:12px;font-weight:700">${esc(c.label)}</span>
           </div>
           ${c.items.map(item=>`
-            <div style="display:flex;align-items:flex-start;gap:7px;font-size:11px;color:${item.ok?'var(--text-2)':'var(--rejected)'};margin-bottom:4px;font-family:'DM Mono',monospace">
-              <span style="flex-shrink:0">${item.ok?'·':'!'}</span>
+            <div style="display:flex;align-items:flex-start;gap:7px;font-size:11px;color:${
+              item.soft?'var(--text-dim)':item.ok?'var(--text-2)':'var(--rejected)'
+            };margin-bottom:4px;font-family:'DM Mono',monospace">
+              <span style="flex-shrink:0;color:${item.soft?'var(--text-dim)':item.ok?'var(--applied)':'var(--rejected)'}">${
+                item.soft?'ℹ':item.ok?'✓':'!'
+              }</span>
               <span>${esc(item.text)}</span>
             </div>`).join('')}
         </div>`).join('')}
@@ -480,9 +498,14 @@ function scoreJdMatch(){
   const job=allJobs.find(j=>j.id===jobId)
   const resume=getResumeById(resumeId)
   if(!job||!resume){toast('Could not find job or resume');return}
-  // Build a pseudo-JD from available job metadata
-  const pseudoJd=[job.title,job.company,job.location||'',job.salary||'',job.experience||'',job.jobType||'',job.deadline||'',job.duration||''].join(' ')
-  renderScoreResults('jdm-results',pseudoJd,resume.text,`${job.title} @ ${job.company}`)
+  // Use pasted JD text if provided, otherwise fall back to metadata
+  const pastedJd=(document.getElementById('jdm-jd-text')?.value||'').trim()
+  const jdText = pastedJd ||
+    [job.title, job.company, job.location||'', job.experience||'', job.jobType||''].join(' ')
+  const label = pastedJd
+    ? `${job.title} @ ${job.company} (full JD)`
+    : `${job.title} @ ${job.company} (metadata only — paste JD for better results)`
+  renderScoreResults('jdm-results', jdText, resume.text, label)
 }
 
 // ── Dropdowns for ATS + JD Match ─────────────────────────────────────────────
