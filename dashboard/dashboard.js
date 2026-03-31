@@ -235,8 +235,39 @@ function exportCSV(){
 
 // ── Keyword extraction shared ─────────────────────────────────────────────────
 function extractKeywords(text){
-  const stop=new Set(['and','the','to','of','in','a','is','are','for','with','on','at','be','we','you','this','that','or','an','as','by','our','your','will','have','has','can','from','their','all','it','its','not','but','was','were','been','they','who','which','what','when','how','any','more','also','up','do','if','so','no','my','he','she','us','i','me','am','re','do','did','does','been','being','had','would','could','should','may','might','must','shall','etc','per','via','vs','ie'])
-  return[...new Set(text.toLowerCase().replace(/[^a-z0-9+#.\s-]/g,' ').split(/\s+/).filter(w=>w.length>=2&&!stop.has(w)))]
+  // Comprehensive stop list: grammar words + cities + months + numbers-as-words + noise
+  const stop=new Set([
+    // Grammar
+    'and','the','to','of','in','a','is','are','for','with','on','at','be','we','you','this','that','or','an','as','by',
+    'our','your','will','have','has','can','from','their','all','it','its','not','but','was','were','been','they','who',
+    'which','what','when','how','any','more','also','up','do','if','so','no','my','he','she','us','i','me','am','re',
+    'did','does','being','had','would','could','should','may','might','must','shall','etc','per','via','vs','ie','eg',
+    'about','after','before','between','during','into','through','under','over','above','below','within','without',
+    'including','such','other','than','both','each','few','more','most','some','such','than','too','very','just','use',
+    'using','used','work','working','role','position','team','company','job','apply','application','candidate','years',
+    'year','month','months','day','days','time','good','strong','excellent','ability','knowledge','understanding',
+    'experience','responsible','responsibilities','opportunity','provide','ensure','support','maintain','help','need',
+    // Months
+    'jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec',
+    'january','february','march','april','june','july','august','september','october','november','december',
+    // Indian cities (common in JDs/resumes but not skills)
+    'bangalore','bengaluru','mumbai','delhi','hyderabad','chennai','pune','kolkata','ahmedabad','jaipur','noida','gurgaon',
+    'gurugram','india','remote','hybrid','onsite',
+    // Numbers as words + ordinals
+    'one','two','three','four','five','six','seven','eight','nine','ten','first','second','third',
+  ])
+  return[...new Set(
+    text.toLowerCase()
+      .replace(/[^a-z0-9+#.\s-]/g,' ')
+      .split(/\s+/)
+      .filter(w=>{
+        if(w.length<3) return false          // too short
+        if(stop.has(w)) return false          // stop word
+        if(/^\d+$/.test(w)) return false     // pure numbers
+        if(/^\d+(st|nd|rd|th)$/.test(w)) return false  // ordinals
+        return true
+      })
+  )]
 }
 
 function renderScoreResults(containerId, jdText, resumeText, jobTitle){
@@ -268,16 +299,21 @@ function renderScoreResults(containerId, jdText, resumeText, jobTitle){
 }
 
 // ── ATS Mode toggle ─────────────────────────────────────────────────────────
-let atsMode = 'keywords'
+let atsMode = 'parse'
 function initATSModes(){
+  // Parse Check is default — hide JD section on load
+  const jdSection=document.getElementById('ats-jd-section')
+  if(jdSection) jdSection.style.display='none'
+  document.getElementById('ats-results').innerHTML=
+    '<div class="hint-box">Paste or select your resume below, then click <strong>Analyse</strong> to simulate ATS parsing.<br><br>Switch to <strong>Keyword Match</strong> to compare your resume against a specific job description.</div>'
+
   document.querySelectorAll('.ats-mode-btn').forEach(btn=>{
     btn.addEventListener('click',()=>{
       document.querySelectorAll('.ats-mode-btn').forEach(b=>b.classList.remove('active'))
       btn.classList.add('active')
       atsMode=btn.dataset.mode
       const jdSection=document.getElementById('ats-jd-section')
-      // Hide JD section for parse-only mode (resume only needed)
-      jdSection.style.display=atsMode==='parse'?'none':''
+      if(jdSection) jdSection.style.display=atsMode==='parse'?'none':''
       document.getElementById('ats-results').innerHTML=`<div class="hint-box">${
         atsMode==='keywords'
           ?'Paste or select a job description and resume, then click <strong>Analyse</strong>.'
@@ -523,7 +559,7 @@ const TEMPLATES=[
   {name:"Jake's Resume",desc:"The most ATS-tested single-column LaTeX template. Used by thousands of Indian engineers targeting product companies and startups. Clean, minimal, no tables.",tags:["LaTeX","Engineering","Startups","Free"],hi:true,url:"https://www.overleaf.com/latex/templates/jakes-resume/syzfjbzwjncs",label:"Open in Overleaf"},
   {name:"Deedy CV",desc:"Popular two-column template from a Google engineer. Works well for experienced candidates. Naukri parsers handle it well.",tags:["LaTeX","Experienced","Two-column","Free"],hi:false,url:"https://www.overleaf.com/latex/templates/deedy-cv/bjryvfsjdyxz",label:"Open in Overleaf"},
   {name:"AltaCV",desc:"Modern two-column template with good spacing. Works for non-technical roles. Clean enough for Internshala and LinkedIn applications.",tags:["LaTeX","Non-technical","Modern","Free"],hi:false,url:"https://www.overleaf.com/latex/templates/altacv-template/trgqjpwnmtgv",label:"Open in Overleaf"},
-  {name:"Google Docs — Simple",desc:"Single column Google Doc template. Best for non-LaTeX users. Exports to PDF cleanly. Naukri and LinkedIn ATS-safe.",tags:["Google Docs","Beginner","ATS-safe","Free"],hi:true,url:"https://docs.google.com/document/d/1YZFLEpx5lY3X2mroXqGmF6xHq6QgN6KDY9ux3Gzw5kQ/edit",label:"Open in Google Docs"},
+  {name:"Google Docs — Simple",desc:"Clean single-column Google Doc template. Beginner-friendly, no LaTeX needed. Export to PDF directly. Safe for Naukri, LinkedIn, and company portals.",tags:["Google Docs","Beginner","ATS-safe","Free"],hi:true,url:"https://docs.google.com/document/d/1_8c1SoiIxBwbzFqrSGhXjqQMp7pq9GlXfAeVOPLJtc4/copy",label:"Make a Copy →"},
   {name:"Resumake",desc:"Open-source online resume builder with multiple clean templates. Export to PDF instantly. Good for freshers.",tags:["Online","Beginner","Open-source","Free"],hi:false,url:"https://resumake.io",label:"Open Resumake"},
   {name:"Flowcv",desc:"Web-based builder with ATS-optimised templates. Free tier covers most use cases. Popular with startup applicants.",tags:["Online","Modern","Freemium"],hi:false,url:"https://flowcv.com",label:"Open Flowcv"},
 ]

@@ -1,27 +1,66 @@
 {
   "manifest_version": 3,
-  "name": "ApplyRadar",
+  "name": "ApplyRadar \u2014 Job Tracker for India",
+  "short_name": "ApplyRadar",
   "version": "1.1.0",
-  "description": "Track job applications across Naukri, LinkedIn, and Internshala in one place.",
-  "permissions": ["storage","activeTab","scripting","tabs","alarms","notifications"],
+  "description": "Track job applications across Naukri, LinkedIn, and Internshala. One-click save, Kanban board, ATS resume checker, follow-up reminders, and resume templates.",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "tabs",
+    "alarms",
+    "notifications"
+  ],
   "host_permissions": [
     "https://www.naukri.com/*",
     "https://www.linkedin.com/*",
     "https://internshala.com/*"
   ],
-  "background": { "service_worker": "background.js" },
-  "content_scripts": [{
-    "matches": ["https://www.naukri.com/*","https://www.linkedin.com/jobs/*","https://internshala.com/*"],
-    "js": ["content/shared.js","content/naukri.js","content/linkedin.js","content/internshala.js"],
-    "run_at": "document_idle"
-  }],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.naukri.com/*",
+        "https://www.linkedin.com/jobs/*",
+        "https://internshala.com/*"
+      ],
+      "js": [
+        "content/shared.js",
+        "content/naukri.js",
+        "content/linkedin.js",
+        "content/internshala.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
   "action": {
     "default_popup": "popup/popup.html",
-    "default_icon": {"16":"icons/icon16.png","48":"icons/icon48.png","128":"icons/icon128.png"}
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   },
-  "icons": {"16":"icons/icon16.png","48":"icons/icon48.png","128":"icons/icon128.png"},
-  "web_accessible_resources": [{
-    "resources": ["dashboard/index.html","dashboard/dashboard.js","icons/*"],
-    "matches": ["<all_urls>"]
-  }]
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "dashboard/index.html",
+        "dashboard/dashboard.js",
+        "icons/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
 }
