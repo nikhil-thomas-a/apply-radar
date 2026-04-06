@@ -8,4 +8,4 @@ This data never leaves your device.
 
 ApplyRadar does not use analytics, advertising, or any third-party services.
 
-Contact: your@email.com
+Contact: nikhilthomasa@email.com
