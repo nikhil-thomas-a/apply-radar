@@ -46,6 +46,12 @@ A Chrome extension for Indian job seekers. Save listings with one click, track t
 
 **No build step required.** Load directly into Chrome.
 
+**Option A — Download release zip (recommended)**
+
+[⬇ Download latest release](https://github.com/nikhil-thomas-a/apply-radar/releases/latest) → unzip → follow steps 2–5 below.
+
+**Option B — Clone or download manually**
+
 1. Clone or download this repo
 2. Go to `chrome://extensions`
 3. Enable **Developer mode** (top-right toggle)
